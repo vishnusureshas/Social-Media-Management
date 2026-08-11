@@ -1,0 +1,47 @@
+{
+  "name": "social-platform-backend",
+  "version": "1.0.0",
+  "description": "Social Media Platform - Backend API (MERN stack)",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node src/index.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/index.js",
+    "lint": "eslint src --ext .js",
+    "test": "cross-env NODE_ENV=test jest --runInBand"
+  },
+  "keywords": [
+    "social-media",
+    "mern",
+    "express",
+    "mongodb",
+    "socket.io"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^9.0.5",
+    "redis": "^6.2.1",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "nodemon": "^3.1.9"
+  }
+}
