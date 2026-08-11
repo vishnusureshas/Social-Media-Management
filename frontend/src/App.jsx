@@ -32,10 +32,10 @@ const App = () => (
     />
 
     <Routes>
-      <Route element={<RootLayout />}>
-        {/* Public */}
-        <Route path="/" element={<Landing />} />
+      {/* Public landing (self-contained: own navbar + footer) */}
+      <Route path="/" element={<Landing />} />
 
+      <Route element={<RootLayout />}>
         {/* Guest only */}
         <Route element={<GuestRoute />}>
           <Route path="/login" element={<Login />} />
