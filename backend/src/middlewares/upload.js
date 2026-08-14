@@ -31,6 +31,14 @@ const postMediaFilter = (req, file, cb) => {
   }
 };
 
+const videoOnlyFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('video/')) {
+    cb(null, true);
+  } else {
+    cb(new APIError(400, 'Only video files are allowed.'));
+  }
+};
+
 export const uploadImage = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
@@ -47,6 +55,12 @@ export const uploadStoryMedia = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024, files: 1 }, // story: image/video ≤50MB, single file
   fileFilter: postMediaFilter,
+});
+
+export const uploadReelVideo = multer({
+  storage,
+  limits: { fileSize: 200 * 1024 * 1024, files: 1 }, // reel: video ≤200MB, single file
+  fileFilter: videoOnlyFilter,
 });
 
 export const uploadToCloudinary = async (file, folder) => {
@@ -108,5 +122,37 @@ export const uploadMediaToCloudinary = async (file, folder) => {
     public_id: result.public_id,
     url: result.secure_url,
     thumb: result.thumbnail_url || result.secure_url || undefined,
+  };
+};
+
+export const uploadReelToCloudinary = async (file, folder) => {
+  assertCloudinaryConfigured();
+  if (!file || !file.buffer) {
+    throw new APIError(400, 'No file uploaded.');
+  }
+
+  const result = await new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: 'video',
+        eager: [{ width: 480, height: 853, crop: 'fill' }],
+      },
+      (error, uploadResult) => {
+        if (error) {
+          reject(new APIError(500, `Reel upload failed: ${error.message}`));
+        } else {
+          resolve(uploadResult);
+        }
+      }
+    );
+    stream.end(file.buffer);
+  });
+
+  return {
+    public_id: result.public_id,
+    url: result.secure_url,
+    thumbnail: result.thumbnail_url || undefined,
+    duration: Number(result.duration) || 0,
   };
 };

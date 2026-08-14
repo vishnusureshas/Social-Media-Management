@@ -16,6 +16,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import reactionRoutes from './routes/reactionRoutes.js';
 import pollRoutes from './routes/pollRoutes.js';
 import storyRoutes from './routes/storyRoutes.js';
+import reelRoutes from './routes/reelRoutes.js';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/reactions', reactionRoutes);
 app.use('/api/v1/polls', pollRoutes);
 app.use('/api/v1/stories', storyRoutes);
+app.use('/api/v1/reels', reelRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
