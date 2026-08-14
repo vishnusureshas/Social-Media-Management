@@ -77,8 +77,8 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.toProfileJSON = function () {
-  return {
+userSchema.methods.toProfileJSON = function (includePrivate = false) {
+  const json = {
     _id: this._id,
     username: this.username,
     fullName: this.fullName,
@@ -94,6 +94,8 @@ userSchema.methods.toProfileJSON = function () {
     emailVerified: this.emailVerified,
     createdAt: this.createdAt,
   };
+  if (includePrivate) json.email = this.email;
+  return json;
 };
 
 const User = mongoose.model('User', userSchema);

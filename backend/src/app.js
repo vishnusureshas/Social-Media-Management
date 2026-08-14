@@ -10,6 +10,9 @@ import { notFound, errorHandler } from './middlewares/errorHandler.js';
 import { sendSuccess } from './utils/response.js';
 import { getRedisStatus } from './config/redis.js';
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import postRoutes from './routes/postRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 
 const app = express();
 
@@ -52,6 +55,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/comments', commentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

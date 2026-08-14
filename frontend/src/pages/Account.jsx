@@ -87,6 +87,9 @@ const Account = () => {
                   )}
                 </div>
                 <div className="flex gap-3">
+                  <Link to={`/u/${profile.username}`}>
+                    <Button variant="outline" size="sm">View public profile</Button>
+                  </Link>
                   <Link to="/change-password">
                     <Button variant="secondary" size="sm">Change password</Button>
                   </Link>

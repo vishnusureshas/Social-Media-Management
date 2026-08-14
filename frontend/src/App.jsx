@@ -12,6 +12,18 @@ import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
 import Account from './pages/Account';
 import ComingSoon from './pages/ComingSoon';
+import Profile from './pages/Profile';
+import EditProfile from './pages/EditProfile';
+import FollowersList from './pages/FollowersList';
+import FollowingList from './pages/FollowingList';
+import Search from './pages/Search';
+import Suggestions from './pages/Suggestions';
+import Feed from './pages/Feed';
+import PostDetail from './pages/PostDetail';
+import Compose from './pages/Compose';
+import Explore from './pages/Explore';
+import HashtagFeed from './pages/HashtagFeed';
+import SavedPosts from './pages/SavedPosts';
 
 const App = () => (
   <>
@@ -49,11 +61,27 @@ const App = () => (
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<Account />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/u/:username/edit" element={<EditProfile />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/suggestions" element={<Suggestions />} />
+        </Route>
+
+        {/* Public profile (no auth needed, but viewer state added if authed) */}
+        <Route path="/u/:username" element={<Profile />} />
+        <Route path="/u/:username/followers" element={<FollowersList />} />
+        <Route path="/u/:username/following" element={<FollowingList />} />
+
+        {/* Posts (Step 4) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/compose" element={<Compose />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/tag/:hashtag" element={<HashtagFeed />} />
+          <Route path="/saved" element={<SavedPosts />} />
         </Route>
 
         {/* Future modules (placeholder until integrated) */}
-        <Route path="/feed" element={<ComingSoon title="Your feed is coming" description="Posts, likes and the timeline will appear here in the next backend step." />} />
-        <Route path="/explore" element={<ComingSoon title="Explore" description="Discover trending content, hashtags and creators soon." />} />
         <Route path="/messaging" element={<ComingSoon title="Messaging" description="Real-time chat is being integrated." />} />
 
         <Route path="*" element={<ComingSoon title="Page not found" description="The page you're looking for doesn't exist." />} />

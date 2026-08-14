@@ -45,7 +45,8 @@ const Login = () => {
     try {
       const res = await login(values).unwrap();
       toast.success(res?.message || 'Welcome back!');
-      navigate('/account', { replace: true });
+      const username = res?.data?.user?.username;
+      navigate(username ? `/u/${username}` : '/account', { replace: true });
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Login failed'));
       const fieldErrors = getFieldErrors(err);

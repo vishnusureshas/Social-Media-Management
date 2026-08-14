@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document only covers the **currently implemented backend steps** (Step 1: Setup, Step 2: Auth).
+> ⚠️ This document only covers the **currently implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -15,6 +15,8 @@ Backend readiness status:
 |--------------|--------------------------------------------|---------|
 | Step 1       | Backend setup, health check, Atlas, ESM    | ✅ Done |
 | Step 2       | Auth (register, verify, login, refresh, logout, reset) | ✅ Done |
+| Step 3       | User (profile CRUD, follow, search, suggestions, avatar/cover upload) | ✅ Done |
+| Step 4       | Posts (CRUD, feed, like, save, share, hashtags, explore, trending) + Comments | ✅ Done (backend only) |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -31,6 +33,63 @@ Backend readiness status:
 | POST   | `/auth/reset-password`      | No   | Reset password (OTP + new pass)|
 | PUT    | `/auth/change-password`     | Yes  | Change password (logged in)    |
 | GET    | `/auth/me`                  | Yes  | Current user profile           |
+
+### User module endpoints (base `http://localhost:5000/api/v1/users`)
+
+| Method | Endpoint            | Auth | Purpose                                   |
+|--------|---------------------|------|-------------------------------------------|
+| GET    | `/:username`        | No   | Public profile (adds `isFollowing` for authed viewers) |
+| PATCH  | `/profile`          | Yes  | Update fullName, bio, gender, dob, location, website, privacy |
+| POST   | `/avatar`           | Yes  | Upload avatar (multipart `image`, image only, ≤5MB) |
+| POST   | `/cover`            | Yes  | Upload cover photo (multipart `image`, image only, ≤5MB) |
+| POST   | `/:username/follow` | Yes  | Follow a user                             |
+| DELETE | `/:username/follow` | Yes  | Unfollow a user                           |
+| GET    | `/:username/followers` | No | Paginated follower list (`?page=&limit=`) |
+| GET    | `/:username/following` | No | Paginated following list (`?page=&limit=`)|
+| GET    | `/search?q=&page=&limit=` | Yes | Search users by username/fullName     |
+| GET    | `/suggestions?limit=` | Yes | Who-to-follow suggestions (excludes self + followed) |
+
+### Posts module endpoints (base `http://localhost:5000/api/v1/posts`)
+
+**All POSTS endpoints require auth.** Feed/list endpoints use **cursor pagination** (`?cursor=<lastPostId>&limit=`, default 20, max 50) → returns `pagination: { cursor, hasMore }`.
+
+| Method | Endpoint             | Body                           | Purpose                              |
+|--------|----------------------|---------------------------------|--------------------------------------|
+| POST   | `/`                  | `content`, `visibility`, `location`, `tags[]` + multipart `media[]` (image/video ≤50MB, max 4) | Create post |
+| GET    | `/`                  | — (query `cursor`, `limit`)     | Feed: own posts + following, `_id` desc |
+| GET    | `/:id`               | —                               | Single post (increments `views`)     |
+| PATCH  | `/:id`               | `content`, `visibility`, `location` | Edit own post (re-extracts hashtags) |
+| DELETE | `/:id`               | —                               | Soft-delete own post (`isDeleted`)   |
+| POST   | `/:id/share`         | `content` (optional)            | Repost (original shared via `originalPost`, bumps `sharesCount`) |
+| POST   | `/:id/like`          | —                               | Like / unlike toggle                 |
+| GET    | `/:id/likes`         | — (query `cursor`, `limit`)     | Users who liked the post             |
+| GET    | `/:id/comments`      | — (query `cursor`, `limit`)     | Top-level comments (threaded)        |
+| POST   | `/:id/save`          | —                               | Save / unsave toggle                 |
+| GET    | `/explore`           | — (query `cursor`, `limit`)     | Popular public posts (sort: likes/comments desc) |
+| GET    | `/tag/:hashtag`      | — (query `cursor`, `limit`)     | Posts by hashtag                     |
+| GET    | `/trending`          | —                               | Trending hashtags (7-day aggregation) |
+
+### Comments module endpoints (base `http://localhost:5000/api/v1/comments`)
+
+**All require auth.**
+
+| Method | Endpoint        | Body                | Purpose                          |
+|--------|-----------------|---------------------|----------------------------------|
+| POST   | `/`             | `post`, `parent?`, `content` | Add comment (or reply if `parent`) |
+| GET    | `/:id/replies`  | — (query `cursor`, `limit`) | Reply thread for a comment        |
+| PATCH  | `/:id`          | `content`           | Edit own comment                 |
+| DELETE | `/:id`          | —                   | Soft-delete own comment          |
+| POST   | `/:id/like`     | —                   | Like / unlike comment            |
+
+> **Post JSON shape** from `GET /posts/:id` and `GET /posts`:
+> `{ post: { _id, author: {_id, username, fullName, avatar, verified, bio, counts}, content, media: [{type: 'image'|'video', public_id, url, thumb}], tags, mentions, location, visibility, likesCount, commentsCount, sharesCount, views, isPinned, originalPost?, isLiked, isSaved, createdAt, updatedAt } }`
+>
+> Feed/explore/hashtag return `{ posts: [...] , pagination: { cursor, hasMore } }`; likes return `{ users: [...] , pagination }`; comments return `{ comments: [...] , pagination }`; trending returns `{ trending: [{ tag, count }] }`.
+
+> Profile JSON shape from `GET /:username`:
+> `{ user: { _id, username, fullName, avatar, coverPhoto, bio, verified, role, location, website, privacy, counts:{posts,stories,followers,following}, emailVerified, createdAt, isFollowing?, followsYou? }, viewerId, cache }`
+>
+> List endpoints return `{ followers | following | users | suggestions: [...] }` plus optional `pagination: { page, limit, total, pages }`.
 
 ---
 
@@ -80,8 +139,9 @@ frontend/
 │   │   └── slices/
 │   │       └── authSlice.js  # tokens + user in memory/localStorage
 │   ├── api/
-│   │   └── baseApi.js        # RTK Query createApi, fetchBaseQuery, auth header, 401 refresh
-│   │   └── authApi.js        # injected endpoints (register, login, ...)
+│   │   ├── baseApi.js        # RTK Query createApi, fetchBaseQuery, auth header, 401 refresh
+│   │   ├── authApi.js        # injected endpoints (register, login, ...)
+│   │   └── userApi.js        # injected endpoints (profile, follow, search, suggestions, upload)
 │   ├── hooks/
 │   │   ├── useAuth.js        # useSelector/useDispatch helpers
 │   │   └── useDocumentTitle.js
@@ -89,7 +149,8 @@ frontend/
 │   │   ├── ProtectedRoute.jsx   # redirect to /login if no token
 │   │   └── GuestRoute.jsx       # redirect to /feed if already logged in
 │   ├── layouts/
-│   │   └── RootLayout.jsx       # top bar or sidebar shell (extended in step 3+)
+│   │   ├── RootLayout.jsx       # top bar or sidebar shell (extended in step 3+)
+│   │   └── AppLayout.jsx        # authed shell: sidebar + main (nav: Feed, Search, Profile) [step 3]
 │   ├── pages/
 │   │   ├── Landing.jsx          # public splash
 │   │   ├── Register.jsx
@@ -97,10 +158,24 @@ frontend/
 │   │   ├── Login.jsx
 │   │   ├── ForgotPassword.jsx
 │   │   ├── ResetPassword.jsx
-│   │   └── ChangePassword.jsx
+│   │   ├── ChangePassword.jsx
+│   │   ├── Profile.jsx          # public profile view (@username) [step 3]
+│   │   ├── EditProfile.jsx      # edit profile + avatar/cover upload [step 3]
+│   │   ├── FollowersList.jsx    # /u/:username/followers [step 3]
+│   │   ├── FollowingList.jsx    # /u/:username/following [step 3]
+│   │   ├── Search.jsx           # user search results [step 3]
+│   │   ├── Suggestions.jsx      # who-to-follow list [step 3]
+│   │   ├── Feed.jsx             # infinite-scroll feed (cursor pagination) [step 4]
+│   │   ├── PostDetail.jsx       # single post + comment thread [step 4]
+│   │   ├── Compose.jsx          # create post (text + media upload) [step 4]
+│   │   ├── Explore.jsx          # popular posts grid [step 4]
+│   │   ├── HashtagFeed.jsx      # /tag/:hashtag posts [step 4]
+│   │   └── SavedPosts.jsx       # saved/bookmarked posts [step 4]
 │   ├── components/
 │   │   ├── ui/                # Button, Input, Card, Spinner, OTPInput
-│   │   └── auth/              # AuthLayout (split-screen), AuthLogo
+│   │   ├── auth/              # AuthLayout (split-screen), AuthLogo
+│   │   ├── user/              # [step 3] UserCard, FollowButton, AvatarUpload, CoverUpload, ProfileHeader, SuggestionsPanel
+│   │   └── post/              # [step 4] PostCard, PostMedia, LikeButton, SaveButton, ShareButton, CommentSection, CommentItem, HashtagChip, TrendingPanel
 │   └── constants/
 │       └── api.js             # BASE_URL, endpooint paths
 ```
@@ -170,12 +245,12 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Auth', 'User', 'Post'],   // extend per future step
+  tagTypes: ['Auth', 'User', 'Profile', 'Followers', 'Following', 'Suggestions', 'Post', 'Feed', 'Explore', 'Hashtag', 'Saved'],   // extend per future step
   endpoints: () => ({}),
 });
 ```
 
-> **401 auto-refresh hook (add later, recommended):** a `baseQueryWithReauth` wrapper that calls `/auth/refresh` once on 401, stores new tokens, and retries the original request.
+> **401 auto-refresh — implemented in `baseApi.js`:** `baseQueryWithReauth` wraps `fetchBaseQuery`. On a `401` it calls `/auth/refresh` with the stored refresh token, dispatches `setCredentials` with the rotated pair, and retries the original request. If refresh fails it dispatches `clearCredentials`. The refresh/logout calls themselves are excluded from the reauth loop. This replaces the earlier "add later" recommendation — the UI gets a transparent session refresh and only sees a logout after real auth failure.
 
 ### 4.3 `api/authApi.js` — endpoint→slice mapping
 
@@ -246,6 +321,190 @@ export const {
 } = authApi;
 ```
 
+### 4.4 `api/userApi.js` — user module endpoints
+
+```js
+import { baseApi } from './baseApi';
+
+export const userApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getProfile: builder.query({
+      query: (username) => ({ url: `/users/${username}`, method: 'GET' }),
+      providesTags: (result, _err, username) => [{ type: 'Profile', id: username }],
+    }),
+    updateProfile: builder.mutation({
+      query: (body) => ({ url: '/users/profile', method: 'PATCH', body }),
+      invalidatesTags: (result) => [
+        { type: 'Profile', id: result?.data?.user?.username },
+        { type: 'Auth' }, // /auth/me cache
+      ],
+    }),
+    uploadAvatar: builder.mutation({
+      query: (formData) => ({ url: '/users/avatar', method: 'POST', body: formData }),
+      invalidatesTags: (result) => [
+        { type: 'Profile', id: result?.data?.user?.username },
+        { type: 'Auth' },
+      ],
+    }),
+    uploadCover: builder.mutation({
+      query: (formData) => ({ url: '/users/cover', method: 'POST', body: formData }),
+      invalidatesTags: (result) => [
+        { type: 'Profile', id: result?.data?.user?.username },
+        { type: 'Auth' },
+      ],
+    }),
+    followUser: builder.mutation({
+      query: (username) => ({ url: `/users/${username}/follow`, method: 'POST' }),
+      invalidatesTags: (result, _err, username) => [
+        { type: 'Profile', id: username },
+        { type: 'Followers' },
+        { type: 'Following' },
+        { type: 'Suggestions' },
+      ],
+    }),
+    unfollowUser: builder.mutation({
+      query: (username) => ({ url: `/users/${username}/follow`, method: 'DELETE' }),
+      invalidatesTags: (result, _err, username) => [
+        { type: 'Profile', id: username },
+        { type: 'Followers' },
+        { type: 'Following' },
+        { type: 'Suggestions' },
+      ],
+    }),
+    getFollowers: builder.query({
+      query: ({ username, page = 1, limit = 20 }) =>
+        ({ url: `/users/${username}/followers`, method: 'GET', params: { page, limit } }),
+      providesTags: ['Followers'],
+    }),
+    getFollowing: builder.query({
+      query: ({ username, page = 1, limit = 20 }) =>
+        ({ url: `/users/${username}/following`, method: 'GET', params: { page, limit } }),
+      providesTags: ['Following'],
+    }),
+    searchUsers: builder.query({
+      query: ({ q, page = 1, limit = 10 }) =>
+        ({ url: '/users/search', method: 'GET', params: { q, page, limit } }),
+    }),
+    getSuggestions: builder.query({
+      query: (limit = 10) => ({ url: '/users/suggestions', method: 'GET', params: { limit } }),
+      providesTags: ['Suggestions'],
+    }),
+  }),
+});
+
+export const {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useUploadAvatarMutation,
+  useUploadCoverMutation,
+  useFollowUserMutation,
+  useUnfollowUserMutation,
+  useGetFollowersQuery,
+  useGetFollowingQuery,
+  useSearchUsersQuery,
+  useGetSuggestionsQuery,
+} = userApi;
+```
+
+> **Multipart uploads with RTK Query:** build a `FormData` and pass it as `body`. Do **not** set a `Content-Type` header manually — `fetchBaseQuery` lets the browser set the multipart boundary automatically.
+>
+> **Follow toggle pattern:** a `FollowButton` reads `isFollowing` from the cached profile and calls `followUser`/`unfollowUser`; RTK Query auto-refreshes the profile + lists via the tags above, so no local `following` state slice is needed.
+
+### 4.5 `api/postApi.js` + `api/commentApi.js` — posts & comments endpoints
+
+Both are `baseApi.injectEndpoints(...)`. Use **cursor pagination**: keep the last post's `_id` as the next `cursor`, stop when `hasMore` is false.
+
+```js
+import { baseApi } from './baseApi';
+
+export const postApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getFeed: builder.query({
+      query: ({ cursor, limit = 20 } = {}) => ({ url: '/posts', method: 'GET', params: { cursor: cursor || undefined, limit } }),
+      providesTags: ['Feed'],
+    }),
+    getExplore: builder.query({
+      query: ({ cursor, limit = 20 } = {}) => ({ url: '/posts/explore', method: 'GET', params: { cursor: cursor || undefined, limit } }),
+      providesTags: ['Explore'],
+    }),
+    getPost: builder.query({
+      query: (id) => ({ url: `/posts/${id}`, method: 'GET' }),
+      providesTags: (result, _err, id) => [{ type: 'Post', id }],
+      // returns { post } — read res.data.post
+    }),
+    getPostsByTag: builder.query({
+      query: ({ hashtag, cursor, limit = 20 }) => ({ url: `/posts/tag/${hashtag}`, method: 'GET', params: { cursor: cursor || undefined, limit } }),
+      providesTags: ['Hashtag'],
+    }),
+    getTrending: builder.query({
+      query: () => ({ url: '/posts/trending', method: 'GET' }),
+      providesTags: ['Hashtag'],
+    }),
+    createPost: builder.mutation({
+      // body = FormData (content, media[] files …), multipart boundary auto-set
+      query: (formData) => ({ url: '/posts', method: 'POST', body: formData }),
+      invalidatesTags: ['Post', 'Feed', 'Explore', 'Hashtag', 'Profile'],
+    }),
+    updatePost: builder.mutation({
+      query: ({ id, body }) => ({ url: `/posts/${id}`, method: 'PATCH', body }),
+      invalidatesTags: ['Post', 'Feed', 'Explore', 'Hashtag'],
+    }),
+    deletePost: builder.mutation({
+      query: (id) => ({ url: `/posts/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Post', 'Feed', 'Explore', 'Hashtag', 'Profile'],
+    }),
+    likePost: builder.mutation({
+      query: (id) => ({ url: `/posts/${id}/like`, method: 'POST' }),
+      invalidatesTags: ['Post'],
+    }),
+    savePost: builder.mutation({
+      query: (id) => ({ url: `/posts/${id}/save`, method: 'POST' }),
+      invalidatesTags: ['Post', 'Saved'],
+    }),
+    getPostLikes: builder.query({
+      query: ({ id, cursor, limit = 20 }) => ({ url: `/posts/${id}/likes`, method: 'GET', params: { cursor: cursor || undefined, limit } }),
+    }),
+  }),
+});
+
+export const postApiEndpoints = postApi.endpoints; // optional namespace for tree-shaking
+```
+
+> **Comment tag pattern:** a `Post` comment query keyed by post id keeps like/save/comment states coherent:
+
+```js
+import { baseApi } from './baseApi';
+
+export const commentApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getPostComments: builder.query({
+      query: ({ postId, cursor, limit = 20 } = {}) => ({ url: `/posts/${postId}/comments`, method: 'GET', params: { cursor: cursor || undefined, limit } }),
+      providesTags: (result, _err, arg) => [{ type: 'Post', id: arg.postId }],
+    }),
+    addComment: builder.mutation({
+      query: (body) => ({ url: '/comments', method: 'POST', body }), // { post, parent?, content }
+      invalidatesTags: (result, _err, arg) => [{ type: 'Post', id: arg.post }],
+    }),
+    getCommentReplies: builder.query({
+      query: ({ id, cursor, limit = 20 }) => ({ url: `/comments/${id}/replies`, method: 'GET', params: { cursor: cursor || undefined, limit } }),
+    }),
+    updateComment: builder.mutation({
+      query: ({ id, body }) => ({ url: `/comments/${id}`, method: 'PATCH', body }),
+      invalidatesTags: (result, _err, arg) => [{ type: 'Post', id: result?.data?.comment?.post }],
+    }),
+    deleteComment: builder.mutation({
+      query: (id) => ({ url: `/comments/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Post'],
+    }),
+    likeComment: builder.mutation({
+      query: (id) => ({ url: `/comments/${id}/like`, method: 'POST' }),
+    }),
+  }),
+});
+```
+
+> **Cursor-pagination pattern for feeds:** the query result exposes `pagination.cursor`. On "load more", fetch the next page with that cursor and **merge** into the existing list (append), rather than refetching from scratch, so scrolling is smooth and cache-friendly.
+
 ---
 
 ## 5. Response Shape (contract with backend)
@@ -278,6 +537,20 @@ RTK Query uses HTTP status for success/error, so components map:
 | `/reset-password`        | ResetPassword     | Guest        | `auth/reset-password`              |
 | `/change-password`       | ChangePassword    | Protected    | `auth/change-password`             |
 | `/account`               | Profile (stub)    | Protected    | `auth/me`                          |
+| `/u/:username`           | Profile           | Public       | `users/:username` [step 3]         |
+| `/u/:username/edit`      | EditProfile       | Protected    | `users/:username`, `users/profile`, `users/avatar`, `users/cover` [step 3] |
+| `/u/:username/followers` | FollowersList     | Public       | `users/:username/followers` [step 3] |
+| `/u/:username/following` | FollowingList     | Public       | `users/:username/following` [step 3] |
+| `/search?q=`             | Search            | Protected    | `users/search` [step 3]            |
+| `/suggestions`           | Suggestions       | Protected    | `users/suggestions` [step 3]       |
+| `/feed`                  | Feed              | Protected    | `posts`, `posts/:id/comments` [step 4] |
+| `/post/:id`              | PostDetail        | Protected    | `posts/:id`, `posts/:id/comments`, `posts/:id/likes` [step 4] |
+| `/compose`               | Compose           | Protected    | `posts` (multipart media) [step 4] |
+| `/explore`               | Explore           | Protected    | `posts/explore` [step 4]           |
+| `/tag/:hashtag`          | HashtagFeed       | Protected    | `posts/tag/:hashtag` [step 4]      |
+| `/saved`                 | SavedPosts        | Protected    | `posts/:id/save`, `posts/explore` [step 4] |
+
+> `/u/:username/edit` renders the edit form **only when** the authed user owns the profile (`auth.user.username === :username`); otherwise redirect to the public profile page.
 
 ### Guard logic
 
@@ -324,6 +597,64 @@ return token ? <Navigate to="/account" replace /> : <Outlet />;
 
 - **Forgot** → OTP by email → **Reset** (`email + otp + newPassword`) → toast → login.
 - **Change** (protected) → `currentPassword + newPassword` → backend revokes all sessions → user must re-login.
+
+### 7.6 User module flows (Step 3)
+
+#### Profile view (`/u/:username`)
+
+1. `useGetProfileQuery(username)` → renders `ProfileHeader` (avatar, cover, bio, counts).
+2. If `auth.user.username === :username` → show **Edit profile** button → `/u/:username/edit`.
+3. Otherwise show `FollowButton`:
+   - `isFollowing` true → `unfollowUser` → toast "Unfollowed".
+   - `isFollowing` false → `followUser` → toast "Following".
+4. Link to followers/following counts → lists pages.
+
+#### Edit profile (`/u/:username/edit`)
+
+1. Form pre-filled from profile query (`fullName`, `bio`, `gender`, `dob`, `location`, `website`, `privacy`).
+2. Submit → `updateProfile` → success toast → navigate back to `/u/:username`.
+3. **Avatar/cover upload:** hidden file inputs → `uploadAvatar` / `uploadCover` (FormData, field name `image`) → optimistic preview via `URL.createObjectURL(file)` before mutation resolves.
+
+#### Followers / Following lists
+
+- `useGetFollowersQuery({ username, page })` / `useGetFollowingQuery(...)`.
+- Render `UserCard` list with `FollowButton` on each (authed users can follow/unfollow from lists).
+- Infinite scroll or "Load more" using the `pagination` object returned by the API.
+
+#### Search (`/search?q=`)
+
+1. Search box updates `?q=` (debounced, ~300ms).
+2. `useSearchUsersQuery({ q, page })` → results as `UserCard`s.
+3. Empty query → show suggestions (`useGetSuggestionsQuery`) or recent searches placeholder.
+
+#### Suggestions (`/suggestions`)
+
+- `useGetSuggestionsQuery(10)` → grid of `UserCard` + `FollowButton`.
+- Following someone removes them from the list (RTK Query `Suggestions` tag invalidation).
+
+### 7.7 Posts module flows (Step 4 — backend done, UI pending)
+
+#### Feed (`/feed`)
+
+1. `useGetFeedQuery({ cursor })` → renders `PostCard` list (cursor pagination).
+2. "Load more": append `pagination.cursor` → merge results into the list.
+3. Like/save buttons mutate via `likePost`/`savePost` → `Post` tags invalidate → card reflects `isLiked`/`isSaved`.
+
+#### Create post (`/compose`)
+
+1. Text area + optional media file inputs.
+2. On submit build a `FormData`: `content`, `visibility` (default `public`), `location` (optional), `media[]` files.
+3. `useCreatePostMutation(formData)` → invalidates `Feed`/`Explore`/`Hashtag`/`Profile` → toast → navigate to `/feed`.
+
+#### Single post (`/post/:id`)
+
+- `useGetPostQuery(id)` + `useGetPostCommentsQuery({ postId: id })` → `PostDetail`.
+- `addComment` (top-level) or with `parent` (reply) → invalidates that `Post` tag so `commentsCount` + thread refresh.
+
+#### Explore / Hashtag
+
+- `useGetExploreQuery` / `useGetPostsByTagQuery({ hashtag })` — same cursor-pagination + merge pattern as feed.
+- `useGetTrendingQuery` renders hashtag chips in a `TrendingPanel`; clicking navigates to `/tag/:hashtag`.
 
 ---
 
@@ -399,7 +730,33 @@ cd frontend && npm run dev        # http://localhost:5173
 - [ ] Change password revokes sessions (must re-login)
 - [ ] Protected routes redirect unauthenticated users to `/login`
 
+### Acceptance Checklist (Step 3 UI — User module)
+
+- [ ] `GET /users/:username` renders public profile (avatar, cover, bio, counts) at `/u/:username`
+- [ ] Own profile shows **Edit profile** button; others show `FollowButton` reflecting `isFollowing`
+- [ ] Follow / Unfollow toggles instantly; counts update on profile + follower/following lists
+- [ ] `/u/:username/edit` saves fullName/bio/gender/dob/location/website/privacy → toast → back to profile
+- [ ] Avatar + cover upload works (multipart `image`, ≤5MB, image-only), Cloudinary URL persisted
+- [ ] `/u/:username/followers` and `/following` paginate correctly
+- [ ] `/search?q=` returns matching users with debounce; empty → suggestions
+- [ ] `/suggestions` excludes self + already-followed; following removes the card live
+- [ ] Profile cache invalidation verified: editing profile reflects on next reload (`cache=hit` after first load)
+
+### Acceptance Checklist (Step 4 UI — Posts & Comments module)
+
+- [ ] `/feed` renders own + following posts (`GET /posts`) with cursor `pagination`
+- [ ] Load more appends next page without duplicate posts (`hasMore` respected)
+- [ ] `/compose` uploads text + media (`media[]`, image/video ≤50MB) → Cloudinary URLs returned
+- [ ] Hashtags in content auto-link to `/tag/:hashtag`; `GET /posts/tag/:hashtag` shows matching posts
+- [ ] `/explore` shows popular public posts; `/posts/trending` shows trending chips
+- [ ] Like/unlike toggles `likesCount` + `isLiked` live; count reflects on `GET /posts/:id/likes`
+- [ ] Save/unsave toggles `isSaved`; saved posts accessible
+- [ ] Repost (`POST /posts/:id/share`) increments `sharesCount` and appears in feed with `originalPost`
+- [ ] Comments: add top-level + reply (`parent`), edit own, delete own (soft), like/unlike
+- [ ] Visibility (public/followers/onlyme) enforced — `onlyme` posts hidden from other viewers
+- [ ] Public profile `counts.posts` updates after create/delete
+
 ---
 
-### Next integration step (when backend Step 3 is done)
-Append: **User module** — user store slice, profile page (view/update/edit), follow/unfollow buttons, followers/following lists, search results page, follower suggestions, avatar/cover upload with Cloudinary.
+### Next integration step (when backend Steps 5–6 are done)
+Append: **Reactions & Polls (Step 5)** then **Stories (Step 6)** — multi-emoji reaction slices, post polls + live voting, and 24h ephemeral story viewer/ring. The `postApi`/`commentApi` pattern above extends with the new modules using the same cursor-pagination + tag-invalidation conventions.

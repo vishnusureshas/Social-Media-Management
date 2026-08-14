@@ -1,17 +1,21 @@
 import { useRef, useState } from 'react';
 import cn from '../../utils/cn';
 
+const toArray = (value, length) => {
+  if (Array.isArray(value)) return value;
+  return (value || '').toString().split('').slice(0, length);
+};
+
 const OTPInput = ({ length = 6, value, onChange, error, autoFocus = true }) => {
   const refs = useRef([]);
   const [values, setValues] = useState(Array(length).fill(''));
 
-  if (value !== undefined) {
-    // controlled mode
-  }
+  const current = toArray(value, length);
+  const active = current.length ? current : values;
 
   const handleChange = (index, val) => {
     const digit = val.replace(/\D/g, '').slice(-1);
-    const next = [...(value || values)];
+    const next = [...active];
     next[index] = digit;
     setValues(next);
     onChange?.(next.join(''));
@@ -19,7 +23,7 @@ const OTPInput = ({ length = 6, value, onChange, error, autoFocus = true }) => {
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !(value || values)[index] && index > 0) {
+    if (e.key === 'Backspace' && !active[index] && index > 0) {
       refs.current[index - 1]?.focus();
     }
   };
@@ -34,10 +38,12 @@ const OTPInput = ({ length = 6, value, onChange, error, autoFocus = true }) => {
     refs.current[Math.min(digits.length, length - 1)]?.focus();
   };
 
+  const display = active.slice(0, length);
+
   return (
     <div>
       <div className="flex justify-between gap-2">
-        {(value || values).map((char, i) => (
+        {display.map((char, i) => (
           <input
             key={i}
             ref={(el) => (refs.current[i] = el)}

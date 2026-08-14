@@ -36,7 +36,7 @@ const register = async (req, res, next) => {
     await sendOtpEmail(user.email, otp, 'verify_email');
 
     sendSuccess(res, 201, 'Registration successful. OTP sent to your email.', {
-      user: user.toProfileJSON(),
+      user: user.toProfileJSON(true),
       otpExpiresInMinutes: Math.round(OTP_EXPIRY_MS / 60000),
       ...devOtpPayload(otp),
     });
@@ -105,7 +105,7 @@ const login = async (req, res, next) => {
     const tokens = await issueTokens(user, req);
     sendSuccess(res, 200, 'Login successful.', {
       ...buildTokenPair(user, tokens.accessToken, tokens.refreshToken, tokens.sessionId),
-      user: user.toProfileJSON(),
+      user: user.toProfileJSON(true),
     });
   } catch (err) {
     next(err);
@@ -236,7 +236,7 @@ const me = async (req, res, next) => {
     const user = await User.findById(req.userId);
     if (!user) throw new APIError(404, 'User not found.');
 
-    const profile = user.toProfileJSON();
+    const profile = user.toProfileJSON(true);
     await cache.set(cacheKey, profile, 120); // 2 min TTL
 
     sendSuccess(res, 200, 'Profile retrieved.', { user: profile, cache: 'miss' });
