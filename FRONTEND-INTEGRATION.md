@@ -819,3 +819,60 @@ Backend notes: stories auto-expire 24h after creation via TTL index on `expiresA
 - [ ] ← / → / Esc navigation and pause work; stories expire server-side 24h after creation (TTL index) and drop out of the ring
 - [ ] "+ Your story" opens the composer; text and media both publish; new story appears in the ring
 - [ ] Deleting a story removes it from the ring for everyone; `Stories`/`Profile` tags keep counts fresh
+
+### Step 7 — Reels module (frontend integration plan)
+
+Backend (Step 7) is complete and mounted at `/api/v1/reels`. The design is in `BACKEND-DESIGN.md` (Reel model, lines 252–274; REELS/SHORTS endpoints, lines 679–688). This plan mirrors the posts/stories conventions: a `reelApi.js` injected into `baseApi`, tag invalidation, and components under `frontend/src/components/reel/`.
+
+#### API module — `src/api/reelApi.js`
+
+```js
+useGetReelsQuery({ cursor, limit })            // GET /reels            → 'Reels'
+useGetReelQuery(id)                            // GET /reels/:id        → {type:'Reel', id}
+useCreateReelMutation()                        // POST /reels           FormData: video, caption, audioName, audioArtist
+useDeleteReelMutation()                        // DELETE /reels/:id     owner only
+useLikeReelMutation()                          // POST /reels/:id/like  toggle (Reaction 'like' emoji)
+useShareReelMutation()                         // POST /reels/:id/share share/repost count
+usePlayReelMutation()                          // POST /reels/:id/play  record a play
+useGetReelCommentsQuery({ id, cursor, limit }) // GET /reels/:id/comments
+useAddReelCommentMutation()                    // POST /reels/:id/comments {content, parent?}
+```
+
+- Tag strategy: add `'Reels'`, `'Reel'` to `baseApi.tagTypes`. `getReels` provides `['Reels']`; `getReel` provides `{type:'Reel', id}`; `likeReel`/`shareReel`/`playReel` invalidate the single `{type:'Reel', id}`; `createReel`/`deleteReel` invalidate `['Reels','Profile']`; reel comments invalidate `{type:'Reel', id}` (so `commentsCount` stays fresh).
+- Multicomponent feed: use `useGetReelsQuery` on the Reels page (vertical pager). The scroll "infinite" pattern should **not** be the infinite-scroll list used for posts — reels render one-at-a-time with infinite paging via `pagination.cursor`.
+
+#### Backend contracts the UI must honor
+
+- `GET /reels` → `{ reels: [ReelView...], pagination: { cursor, hasMore } }`. `cursor` is a **composite string `"<score>::<reelId>"`** (NOT a bare ObjectId) — pass it straight back to keep "algorithmic ranking" (engagement-weighted) order. ReelView: `{ _id, author{...}, video: {url, thumbnail}, caption, audio?... , tags, mentions, likesCount, commentsCount, sharesCount, views, plays, durationSec, isLiked, createdAt }`.
+- `POST /reels` → `{ reel }` (201). Requires `video` file (multipart) — the composer must always attach a file; server enforces video-only and ≤90s (rejects with 400 if longer). Duration is detected server-side from Cloudinary; the client does not need to send it.
+- `GET /reels/:id` → `{ reel }`, increments `views`. Call it when a reel becomes the active/focused item (do NOT increment on every autoplay scroll pass — the play counter is separate).
+- `POST /reels/:id/play` → `{ plays }`. Fire once when a reel's video actually starts playing (autoplay intent), guarded so it isn't spammed on scroll.
+- `POST /reels/:id/like` → `{ liked, likesCount }` (toggle, optimistic). Server writes a `like` emoji `Reaction` on the reel; the same `Reaction` doc backs `/reactions/summary?targetType=reel&targetId=...`, so the emoji breakdown for reels works through the existing Reaction UI patterns.
+- `GET /reels/:id/comments` → `{ comments:[{ ...author, repliesCount }], pagination }`; `POST /reels/:id/comments` accepts `{ content, parent? }`. Reel comments live in the same `Comment` model via `targetType:'reel'` — shape identical to post comments, so reuse the comment UI components (CommentList / CommentComposer) with the reel's `_id` as the target.
+- `DELETE /reels/:id` → owner-only (403 otherwise) — show Delete only when `useAuth().user._id` matches `reel.author._id`.
+
+#### Components (under `src/components/reel/`)
+
+- `ReelsPage.jsx` (`src/pages/Reels.jsx`, route `/reels` in `RootLayout` nav) — full-height vertical pager: one `ReelPlayer` fills the viewport, swipe/scroll up-down advances using `pagination.hasMore` + `pagination.cursor`. Keep mounted player reels only (index ±1) for performance; call `useGetReelQuery` for the focused reel (view counted) and `usePlayReelMutation` when its video `onPlay` fires.
+- `ReelPlayer.jsx` — 9:16 video (`autoPlay`, `loop`, `playsInline`, `muted` toggle), `poster={video.thumbnail}`, caption overlay, author row, right rail with Like / Share / Comment buttons + live counters (`isLiked`, `likesCount`), a plays badge, and a Delete action for own reels. Right-rail counts update optimistically from the mutation response then settle via tag refetch.
+- `ReelComposer.jsx` — `FormData` upload (file picker `accept="video/*"`), caption ≤2200, optional audio name/artist; mirrors `StoryComposer` modal pattern; on success close + invalidate (`['Reels']`).
+- `ReelCommentSheet.jsx` — bottom sheet listing reel comments (reuse post comment components) + add comment box; invalidates the focused `{type:'Reel', id}`.
+
+#### Wiring
+
+- Add `Reels` route to `RootLayout` nav (icon + `/reels`) and a `Link` on the Home feed (Next to StoriesRing) if desired.
+- `baseApi.tagTypes` gains `'Reels', 'Reel'` (keeps the tag registry + list in sync).
+- Follow the existing no-setState-in-effect, RTK Query optimistic conventions used by `postApi`/`commentApi`.
+
+### Acceptance Checklist (Step 7 UI — Reels module)
+
+- [ ] `/reels` route in nav opens a full-screen vertical reel player; first reel autoplays with sound-off toggle
+- [ ] Feed ordering follows the server `cursor` exactly (algorithmic ranking maintained across pages); load-more prepends/continues on scroll
+- [ ] Caption + author row render on the video with a 9:16 thumbnail poster while it buffers
+- [ ] Like toggles instantly (optimistic) and settles to `likesCount` + `isLiked` from the server; reactions summary for the reel matches
+- [ ] Share increments `sharesCount` on the focused reel only (no double-fire on scroll)
+- [ ] Views increment once per focused reel; plays record on the first real `onPlay` only
+- [ ] Comments open a sheet with post-style comments + replies; new comments increment `commentsCount` on the active reel
+- [ ] Create flow reports a specific error when the server rejects an oversize/non-video/`>90s` file; successful upload appears in the feed
+- [ ] Own reels show Delete and remove the reel everywhere after confirm
+- [ ] `Reels`/`Reel`/`Profile` tags keep the page, like counts, and profile counts consistent after mutations
