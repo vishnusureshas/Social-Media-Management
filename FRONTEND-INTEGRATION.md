@@ -787,5 +787,35 @@ Post payload additions (backend): `reactions: { total, summary: [{emoji,count}],
 - [ ] `POST /polls/create` attaches a poll to own post; other users cannot add polls to your post
 - [ ] `Poll` tag invalidation keeps poll results fresh on the post detail page
 
-### Next integration step (when backend Step 6 is done)
-Append: **Stories (Step 6)** — 24h ephemeral story viewer/ring. The `postApi`/`commentApi` pattern above extends with the new module using the same cursor-pagination + tag-invalidation conventions.
+### Step 6 — Stories module
+
+API module: `src/api/storyApi.js` (extends `baseApi`; `tagTypes`, items 13–14). All story endpoints are protected (`Bearer` token).
+
+```js
+useGetActiveStoriesQuery()      // GET /stories          → feed query
+useGetStoryQuery(id, opts)      // GET /stories/:id      → Story tag (registers a view via $addToSet + $inc)
+useCreateStoryMutation()        // POST /stories         FormData: text, bgColor, media (optional)
+useDeleteStoryMutation()        // DELETE /stories/:id   own story only
+useGetStoryViewersQuery(id, {cursor, limit}) // GET /stories/:id/viewers  author-only
+```
+
+Cache/invalidation: `getActiveStories` provides `['Stories']`; `getStory` provides `{type:'Story', id}`; `createStory`/`deleteStory` invalidate `['Stories','Profile']` so the ring + profile story counts stay in sync.
+
+Components:
+- `src/components/stories/StoriesRing.jsx` — horizontal scrolling ring; gradient border on each avatar; a leading dashed-border "Your story" button (calls the passed `ownStoryHandler`) when provided; tapping a ring item opens `StoryViewer`. Empty state: "No stories right now…".
+- `src/components/stories/StoryViewer.jsx` — fullscreen modal. Auto-advances every 5s via rAF-driven progress; progress bars per story (tap any bar to jump); ←/→ and Esc keys; pause button; view count (`getStory.data.data.story.viewCount ?? story.viewCount ?? 0'); Delete (own stories only, confirm dialog). Renders video autoplay-loop, image, or text on `bgColor`. Opening a story calls `useGetStoryQuery` to register the view.
+- `src/components/stories/StoryComposer.jsx` — modal to publish a story: text (≤500) on a chosen `bgColor` or a photo/video picker (replaces text when media chosen); submits `FormData` via `useCreateStoryMutation`; success toast.
+
+Story response shapes (backend): `POST /stories` → `{ story }`; `GET /stories` → `{ authors: [{ user, stories: [...] }] }` with `pagination`; `GET /stories/:id` → `{ story, viewedByViewer }`; `GET /stories/:id/viewers` → `{ viewers: [...], pagination }`. Story object: `{ _id, author, media: [{url, mediaType, thumb}], bgColor, text, mentions, tags, viewCount, isActive, expiresAt, createdAt }`.
+
+Backend notes: stories auto-expire 24h after creation via TTL index on `expiresAt` (`expireAfterSeconds: 0`); `GET /stories` only returns active, unexpired stories from followed users + self; views only count distinct viewers (`$addToSet` on `viewers`, `$inc` on `viewCount`); delete is soft (`isActive: false`) and decrements the author stats counter.
+
+### Acceptance Checklist (Step 6 UI — Stories module)
+
+- [ ] Ring shows stories from followed users + the user's own; empty state when none
+- [ ] Clicking a ring item opens the viewer with progress bars that auto-advance every 5s
+- [ ] Video stories autoplay; image stories display; text stories render on the chosen background color
+- [ ] Each open registers a view; the view counter increments and viewers list works on own stories only (404 for others)
+- [ ] ← / → / Esc navigation and pause work; server tells story is about to expire (client keeps viewer local)
+- [ ] "+ Your story" opens the composer; text and media both publish; new story appears in the ring
+- [ ] Deleting a story removes it from the ring for everyone; `Stories`/`Profile` tags keep counts fresh

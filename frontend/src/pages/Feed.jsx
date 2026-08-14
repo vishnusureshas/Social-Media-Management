@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useInfinitePosts } from '../hooks/useInfinitePosts';
 import { useGetFeedQuery } from '../api/postApi';
 import PostCard from '../components/post/PostCard';
 import TrendingPanel from '../components/post/TrendingPanel';
+import StoriesRing from '../components/stories/StoriesRing';
+import StoryComposer from '../components/stories/StoryComposer';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 
 const Feed = () => {
   const { posts, isLoading, isError, loadMore, hasMore, isFetching, refetch } =
     useInfinitePosts(useGetFeedQuery);
+  const [composing, setComposing] = useState(false);
 
   if (isError) {
     return (
@@ -20,6 +24,9 @@ const Feed = () => {
 
   return (
     <PageShell>
+      <StoriesRing ownStoryHandler={() => setComposing(true)} />
+      {composing && <StoryComposer onClose={() => setComposing(false)} />}
+
       <div className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/60 p-5 backdrop-blur">
         <Link to="/compose" className="group flex items-center gap-3">
           <span

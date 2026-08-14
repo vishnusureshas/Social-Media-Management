@@ -43,6 +43,12 @@ export const uploadPostMedia = multer({
   fileFilter: postMediaFilter,
 });
 
+export const uploadStoryMedia = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024, files: 1 }, // story: image/video ≤50MB, single file
+  fileFilter: postMediaFilter,
+});
+
 export const uploadToCloudinary = async (file, folder) => {
   assertCloudinaryConfigured();
   if (!file || !file.buffer) {
