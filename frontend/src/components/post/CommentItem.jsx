@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Avatar } from '../user/UserCard';
 import { formatRelative } from '../../utils/postUtils';
+import CommentReaction from './CommentReaction';
 
 const CommentItem = ({ comment, onReply }) => {
   const author = comment?.author;
@@ -28,6 +29,7 @@ const CommentItem = ({ comment, onReply }) => {
             Reply
           </button>
         )}
+        <CommentReaction comment={comment} postId={comment.post} />
       </div>
     </div>
   );

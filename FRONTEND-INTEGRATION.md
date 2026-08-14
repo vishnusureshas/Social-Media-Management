@@ -758,5 +758,34 @@ cd frontend && npm run dev        # http://localhost:5173
 
 ---
 
-### Next integration step (when backend Steps 5–6 are done)
-Append: **Reactions & Polls (Step 5)** then **Stories (Step 6)** — multi-emoji reaction slices, post polls + live voting, and 24h ephemeral story viewer/ring. The `postApi`/`commentApi` pattern above extends with the new modules using the same cursor-pagination + tag-invalidation conventions.
+### Integration: Step 5 — Reactions & Polls
+
+New RTK API slices (`src/api/reactionApi.js`, `src/api/pollApi.js`) added via `injectEndpoints` on `baseApi`. Tag types: `Post` (existing), `Poll` (new). Reactions on posts/comments invalidate the owning post's `{ type: 'Post', id }` tag so the feed/detail stays in sync.
+
+- `useReactMutation` → `POST /reactions` `{ targetType: 'post'|'comment', targetId, emoji }`; passing `postId` in the arg scopes tag invalidation to that post. Same emoji again removes the reaction (toggle); a different emoji updates it.
+- `useRemoveReactionMutation` → `DELETE /reactions/:id`
+- `useGetReactionSummaryQuery` → `GET /reactions/summary?targetType=&targetId=` (emoji breakdown + `myReaction`)
+- `useVotePollMutation` → `POST /polls/:id/vote` `{ optionId }`; one vote per user (backend `voters` guard)
+- `useGetPollResultsQuery` → `GET /polls/:id/results`
+- `useCreatePollMutation` → `POST /polls/create` `{ post, question, options: [text...] (2–5), expiresAt? }` (author-only)
+
+Components:
+- `src/components/post/ReactionBar.jsx` — compact emoji row (👍❤️😆😮😢😡) with hover picker; optimistic count/my-reaction updates; `post.reactions.summary`/`total`/`myReaction` populated by the backend `decoratePosts`.
+- `src/components/post/CommentReaction.jsx` — lightweight emoji toggle on each comment.
+- `src/components/post/PollCard.jsx` — embedded poll with live percentage bars; results shown once voted or expired; shows total votes + ends-in label.
+
+Post payload additions (backend): `reactions: { total, summary: [{emoji,count}], myReaction }` and `poll` view (`question`, `options[{id,text,votes}]`, `totalVotes`, `hasVoted`, `myOptionId`, `isExpired`) on every post response.
+
+### Acceptance Checklist (Step 5 UI — Reactions & Polls module)
+
+- [ ] Reacting on a post shows the emoji picker; total + chosen emoji update optimistically
+- [ ] Tapping the same emoji again removes the reaction; a different emoji replaces it
+- [ ] Reaction summary (`/reactions/summary`) matches the feed counts after refresh
+- [ ] Comments can be reacted to with the small emoji toggle; no double-count on the owning post
+- [ ] Post with a poll shows options; voting records once (`hasVoted` true, further clicks disabled)
+- [ ] Voted/expired polls render percentage bars + total votes; never double-vote
+- [ ] `POST /polls/create` attaches a poll to own post; other users cannot add polls to your post
+- [ ] `Poll` tag invalidation keeps poll results fresh on the post detail page
+
+### Next integration step (when backend Step 6 is done)
+Append: **Stories (Step 6)** — 24h ephemeral story viewer/ring. The `postApi`/`commentApi` pattern above extends with the new module using the same cursor-pagination + tag-invalidation conventions.

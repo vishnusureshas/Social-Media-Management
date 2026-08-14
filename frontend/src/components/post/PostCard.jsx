@@ -6,6 +6,8 @@ import { PostMedia, ShareOriginal } from './PostMedia';
 import LikeButton from './LikeButton';
 import SaveButton from './SaveButton';
 import ShareButton from './ShareButton';
+import ReactionBar from './ReactionBar';
+import PollCard from './PollCard';
 
 const PostCard = ({ post }) => {
   const author = post?.author;
@@ -55,8 +57,11 @@ const PostCard = ({ post }) => {
 
         <PostMedia media={post.media} />
 
+        {post.poll && <PollCard poll={post.poll} postId={post._id} />}
+
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
           <LikeButton post={post} size="md" />
+          <ReactionBar post={post} postId={post._id} />
           <Link
             to={`/post/${post._id}`}
             className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-brand-50 hover:text-brand-600"

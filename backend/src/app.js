@@ -13,6 +13,8 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
+import reactionRoutes from './routes/reactionRoutes.js';
+import pollRoutes from './routes/pollRoutes.js';
 
 const app = express();
 
@@ -58,6 +60,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/comments', commentRoutes);
+app.use('/api/v1/reactions', reactionRoutes);
+app.use('/api/v1/polls', pollRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

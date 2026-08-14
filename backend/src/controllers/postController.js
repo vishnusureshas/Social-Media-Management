@@ -4,11 +4,36 @@ import Follow from '../models/FollowModel.js';
 import Like from '../models/LikeModel.js';
 import Saved from '../models/SavedModel.js';
 import User from '../models/User.js';
+import Reaction from '../models/Reaction.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
+const REACTION_EMOJIS = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+
+const pollToView = (poll, viewerId) => {
+  if (!poll) return null;
+  const votersFor = (opt) => Array.isArray(opt.voters) ? opt.voters : [];
+  const myOption = (viewerId && (poll.voters || []).some((v) => String(v) === String(viewerId)))
+    ? poll.options.find((opt) => votersFor(opt).some((v) => String(v) === String(viewerId)))
+    : null;
+
+  return {
+    id: poll._id,
+    question: poll.question,
+    options: poll.options.map((opt) => ({
+      id: opt._id,
+      text: opt.text,
+      votes: opt.votes,
+    })),
+    totalVotes: poll.totalVotes,
+    expiresAt: poll.expiresAt,
+    hasVoted: Boolean(myOption),
+    myOptionId: myOption ? myOption._id : null,
+    isExpired: Boolean(poll.expiresAt && new Date(poll.expiresAt) < new Date()),
+  };
+};
 
 const extractTags = (content = '') => {
   const matches = content.match(/#[a-zA-Z0-9_]+/g) || [];
@@ -27,13 +52,15 @@ const findMentionedUsers = async (content) => {
   return users.map((u) => u._id);
 };
 
-const decoratePost = (post, viewerId, viewerLikes, viewerSaves) => {
+const decoratePost = (post, viewerId, viewerLikes, viewerSaves, viewerReactions) => {
   const doc = post.toObject ? post.toObject() : post;
   const id = viewerId ? String(viewerId) : null;
   return {
     ...doc,
     isLiked: id ? viewerLikes.has(String(post._id)) : false,
     isSaved: id ? viewerSaves.has(String(post._id)) : false,
+    reactions: viewerReactions ? viewerReactions[String(post._id)] : undefined,
+    poll: pollToView(doc.poll, id),
   };
 };
 
@@ -42,18 +69,43 @@ const decoratePosts = async (posts, viewerId) => {
 
   let viewerLikes = new Set();
   let viewerSaves = new Set();
+  let viewerReactions = null;
   const ids = posts.map((p) => p._id);
 
   if (viewerId) {
-    const [likes, saves] = await Promise.all([
+    const [likes, saves, reactions, reactionRows] = await Promise.all([
       Like.find({ user: viewerId, targetType: 'post', targetId: { $in: ids } }).select('targetId'),
       Saved.find({ user: viewerId, post: { $in: ids } }).select('post'),
+      Reaction.find({ user: viewerId, targetType: 'post', targetId: { $in: ids } }).select('targetId emoji'),
+      Reaction.aggregate([
+        { $match: { targetType: 'post', targetId: { $in: ids } } },
+        { $group: { _id: { targetId: '$targetId', emoji: '$emoji' }, count: { $sum: 1 } } },
+      ]),
     ]);
     viewerLikes = new Set(likes.map((l) => String(l.targetId)));
     viewerSaves = new Set(saves.map((s) => String(s.post)));
+
+    const myEmoji = new Map(reactions.map((r) => [String(r.targetId), r.emoji]));
+
+    viewerReactions = {};
+    for (const id of ids) {
+      viewerReactions[String(id)] = {
+        total: 0,
+        summary: REACTION_EMOJIS.map((emoji) => ({ emoji, count: 0 })),
+        myReaction: myEmoji.get(String(id)) || null,
+      };
+    }
+    reactionRows.forEach((row) => {
+      const key = String(row._id.targetId);
+      if (viewerReactions[key]) {
+        viewerReactions[key].total += row.count;
+        const entry = viewerReactions[key].summary.find((s) => s.emoji === row._id.emoji);
+        if (entry) entry.count = row.count;
+      }
+    });
   }
 
-  return posts.map((p) => decoratePost(p, viewerId, viewerLikes, viewerSaves));
+  return posts.map((p) => decoratePost(p, viewerId, viewerLikes, viewerSaves, viewerReactions));
 };
 
 const canViewPost = async (post, viewerId) => {
@@ -99,7 +151,9 @@ const createPost = async (req, res, next) => {
 
     await User.updateOne({ _id: req.userId }, { $inc: { 'counts.posts': 1 } });
 
-    const populated = await Post.findById(post._id).populate('author', USER_FIELDS);
+    const populated = await Post.findById(post._id)
+      .populate('author', USER_FIELDS)
+      .populate('poll');
     const [decorated] = await decoratePosts([populated], req.userId);
 
     sendSuccess(res, 201, 'Post created successfully.', { post: decorated });
@@ -126,7 +180,8 @@ const getFeed = async (req, res, next) => {
       .limit(Number(limit) + 1)
       .populate('author', USER_FIELDS)
       .populate('originalPost', 'content media author createdAt')
-      .populate('originalPost.author', USER_FIELDS);
+      .populate('originalPost.author', USER_FIELDS)
+      .populate('poll');
 
     const hasMore = posts.length > Number(limit);
     const pagePosts = hasMore ? posts.slice(0, Number(limit)) : posts;
@@ -145,7 +200,7 @@ const getFeed = async (req, res, next) => {
 
 const getPost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id).populate('author', USER_FIELDS);
+    const post = await Post.findById(req.params.id).populate('author', USER_FIELDS).populate('poll');
 
     if (!post || post.isDeleted) throw new APIError(404, 'Post not found.');
 
@@ -180,7 +235,7 @@ const updatePost = async (req, res, next) => {
     Object.assign(post, updates);
     await post.save();
 
-    const populated = await Post.findById(post._id).populate('author', USER_FIELDS);
+    const populated = await Post.findById(post._id).populate('author', USER_FIELDS).populate('poll');
     const [decorated] = await decoratePosts([populated], req.userId);
 
     sendSuccess(res, 200, 'Post updated.', { post: decorated });
@@ -236,7 +291,8 @@ const sharePost = async (req, res, next) => {
     const populated = await Post.findById(share._id)
       .populate('author', USER_FIELDS)
       .populate('originalPost', 'content media author createdAt')
-      .populate('originalPost.author', USER_FIELDS);
+      .populate('originalPost.author', USER_FIELDS)
+      .populate('poll');
     const [decorated] = await decoratePosts([populated], req.userId);
 
     sendSuccess(res, 201, 'Post shared.', { post: decorated });
@@ -339,7 +395,8 @@ const getExplore = async (req, res, next) => {
     const posts = await Post.find(query)
       .sort({ likesCount: -1, commentsCount: -1, _id: -1 })
       .limit(Number(limit) + 1)
-      .populate('author', USER_FIELDS);
+      .populate('author', USER_FIELDS)
+      .populate('poll');
 
     const hasMore = posts.length > Number(limit);
     const pagePosts = hasMore ? posts.slice(0, Number(limit)) : posts;
@@ -372,7 +429,8 @@ const getPostsByTag = async (req, res, next) => {
     const posts = await Post.find(query)
       .sort({ _id: -1 })
       .limit(Number(limit) + 1)
-      .populate('author', USER_FIELDS);
+      .populate('author', USER_FIELDS)
+      .populate('poll');
 
     const hasMore = posts.length > Number(limit);
     const pagePosts = hasMore ? posts.slice(0, Number(limit)) : posts;
@@ -408,6 +466,7 @@ const getSavedPosts = async (req, res, next) => {
     const posts = postIds.length
       ? await Post.find({ _id: { $in: postIds }, isDeleted: false })
           .populate('author', USER_FIELDS)
+          .populate('poll')
       : [];
 
     const orderMap = new Map(postIds.map((id, i) => [String(id), i]));
