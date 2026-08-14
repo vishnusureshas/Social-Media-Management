@@ -1,6 +1,17 @@
 import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
+import config from '../config/env.js';
 import APIError from '../utils/AppError.js';
+
+const assertCloudinaryConfigured = () => {
+  const { cloudName, apiKey, apiSecret } = config.cloudinary;
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new APIError(
+      503,
+      'Media uploads are not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in backend/.env.'
+    );
+  }
+};
 
 const storage = multer.memoryStorage();
 
@@ -33,6 +44,7 @@ export const uploadPostMedia = multer({
 });
 
 export const uploadToCloudinary = async (file, folder) => {
+  assertCloudinaryConfigured();
   if (!file || !file.buffer) {
     throw new APIError(400, 'No file uploaded.');
   }
@@ -46,7 +58,7 @@ export const uploadToCloudinary = async (file, folder) => {
       },
       (error, uploadResult) => {
         if (error) {
-          reject(new APIError(500, 'Image upload failed. Please try again.'));
+          reject(new APIError(500, `Image upload failed: ${error.message}`));
         } else {
           resolve(uploadResult);
         }
@@ -59,6 +71,7 @@ export const uploadToCloudinary = async (file, folder) => {
 };
 
 export const uploadMediaToCloudinary = async (file, folder) => {
+  assertCloudinaryConfigured();
   if (!file || !file.buffer) {
     throw new APIError(400, 'No file uploaded.');
   }
@@ -75,7 +88,7 @@ export const uploadMediaToCloudinary = async (file, folder) => {
       },
       (error, uploadResult) => {
         if (error) {
-          reject(new APIError(500, 'Media upload failed. Please try again.'));
+          reject(new APIError(500, `Media upload failed: ${error.message}`));
         } else {
           resolve(uploadResult);
         }

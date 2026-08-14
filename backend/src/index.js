@@ -27,6 +27,13 @@ const start = async () => {
   await connectDB();
   await connectRedis();
 
+  const { cloudName, apiKey, apiSecret } = config.cloudinary;
+  if (!cloudName || !apiKey || !apiSecret) {
+    console.warn(
+      '[warning] Cloudinary is NOT configured. Image/video uploads will fail. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in backend/.env'
+    );
+  }
+
   server.listen(config.port, () => {
     console.log(`[server] running in ${config.env} mode on port ${config.port}`);
     console.log(`[server] health check: http://localhost:${config.port}/api/v1/health`);
