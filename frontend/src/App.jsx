@@ -24,6 +24,7 @@ import Compose from './pages/Compose';
 import Explore from './pages/Explore';
 import HashtagFeed from './pages/HashtagFeed';
 import SavedPosts from './pages/SavedPosts';
+import Reels from './pages/Reels';
 
 const App = () => (
   <>
@@ -79,6 +80,11 @@ const App = () => (
           <Route path="/explore" element={<Explore />} />
           <Route path="/tag/:hashtag" element={<HashtagFeed />} />
           <Route path="/saved" element={<SavedPosts />} />
+        </Route>
+
+        {/* Reels (Step 7) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/reels" element={<Reels />} />
         </Route>
 
         {/* Future modules (placeholder until integrated) */}
