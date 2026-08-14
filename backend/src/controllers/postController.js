@@ -125,7 +125,8 @@ const getFeed = async (req, res, next) => {
       .sort({ _id: -1 })
       .limit(Number(limit) + 1)
       .populate('author', USER_FIELDS)
-      .populate('originalPost', 'content media author createdAt');
+      .populate('originalPost', 'content media author createdAt')
+      .populate('originalPost.author', USER_FIELDS);
 
     const hasMore = posts.length > Number(limit);
     const pagePosts = hasMore ? posts.slice(0, Number(limit)) : posts;
@@ -234,7 +235,8 @@ const sharePost = async (req, res, next) => {
 
     const populated = await Post.findById(share._id)
       .populate('author', USER_FIELDS)
-      .populate('originalPost', 'content media author createdAt');
+      .populate('originalPost', 'content media author createdAt')
+      .populate('originalPost.author', USER_FIELDS);
     const [decorated] = await decoratePosts([populated], req.userId);
 
     sendSuccess(res, 201, 'Post shared.', { post: decorated });

@@ -45,7 +45,7 @@ const ShareOriginal = ({ original }) => {
       className="mt-3 block rounded-2xl border border-slate-200 bg-white/60 p-3 transition-colors hover:border-brand-300"
     >
       <p className="text-xs font-semibold text-slate-500">
-        {author ? `@${author.username} shared` : 'Original post'}
+        {author?.username ? `@${author.username} shared` : 'Shared post'}
       </p>
       {original.content && <p className="mt-1 line-clamp-3 text-sm text-slate-700">{original.content}</p>}
       {original.media?.[0] && (
