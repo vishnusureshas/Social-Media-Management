@@ -33,6 +33,17 @@ import Chat from './pages/Chat';
 import MyReports from './pages/MyReports';
 import AdminReports from './pages/AdminReports';
 import AdminKeywords from './pages/AdminKeywords';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminPosts from './pages/AdminPosts';
+import AdminReels from './pages/AdminReels';
+import AdminStories from './pages/AdminStories';
+import AdminComments from './pages/AdminComments';
+import AdminHashtags from './pages/AdminHashtags';
+import AdminBroadcast from './pages/AdminBroadcast';
+import AdminAuditLogs from './pages/AdminAuditLogs';
+import AdminSettings from './pages/AdminSettings';
 
 const App = () => (
   <>
@@ -60,6 +71,7 @@ const App = () => (
         {/* Guest only */}
         <Route element={<GuestRoute />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -109,8 +121,26 @@ const App = () => (
         {/* Reports & Moderation (Step 11) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/reports" element={<MyReports />} />
+        </Route>
+
+        {/* Admin Panel (Step 12) — admin/superadmin */}
+        <Route element={<ProtectedRoute requireRoles={['admin', 'superadmin']} />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/posts" element={<AdminPosts />} />
+          <Route path="/admin/reels" element={<AdminReels />} />
+          <Route path="/admin/stories" element={<AdminStories />} />
+          <Route path="/admin/comments" element={<AdminComments />} />
+          <Route path="/admin/hashtags" element={<AdminHashtags />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/keywords" element={<AdminKeywords />} />
+        </Route>
+
+        {/* Admin Panel (Step 12) — superadmin only */}
+        <Route element={<ProtectedRoute requireRoles={['superadmin']} />}>
+          <Route path="/admin/broadcast" element={<AdminBroadcast />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
         {/* Reels (Step 7) */}

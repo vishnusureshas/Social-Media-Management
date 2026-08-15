@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security, Step 10: Chat, Step 11: Reports & Moderation, Step 12: Admin Panel).
+> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security, Step 10: Chat, Step 11: Reports & Moderation, Step 12: Admin Panel — backend + frontend).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -24,7 +24,7 @@ Backend readiness status:
 | Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
 | Step 10      | Chat (DM + group, socket, typing/read receipts, presence) | ✅ Done |
 | Step 11      | Reports & Moderation (report content, admin triage, auto keyword filter) | ✅ Done |
-| Step 12      | Admin Panel (dashboard, user/content management, audit logs, broadcast, settings) | ✅ Backend Done |
+| Step 12      | Admin Panel (dashboard, user/content management, audit logs, broadcast, settings) | ✅ Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -1195,23 +1195,35 @@ Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `
 - [x] Admin `/admin/keywords` lists/adds/removes moderation keywords; adding a keyword flags newly created posts/stories/reels/comments containing it
 - [x] Flagged (`isFlagged`) content is visible in the admin queue for triage; blocked/muted suppression still applies server-side
 
-### Step 12 — Admin Panel (backend integration)
+### Step 12 — Admin Panel (backend + frontend integration)
 
-Backend (Step 12) is complete and mounted at `/api/v1/admin`. The design is in `BACKEND-DESIGN.md` (AdminActionLog model, lines 466–478; ADMIN endpoints, lines 739–769). Frontend UI is **not** yet integrated (next task).
+Backend (Step 12) is complete and mounted at `/api/v1/admin`. The design is in `BACKEND-DESIGN.md` (AdminActionLog model, lines 466–478; ADMIN endpoints, lines 739–769). Frontend is integrated below.
 
-#### New backend files
+#### Authorization model (frontend)
 
-- **`src/models/AdminActionLogModel.js`** — audit-trail log: `admin`, `action` (enum incl. `admin_login`, `ban_user`, `unban_user`, `activate_user`, `deactivate_user`, `change_role`, `delete_user`, `delete_post`, `restore_post`, `pin_post`, `unpin_post`, `delete_story`, `delete_reel`, `delete_comment`, `resolve_report`, `dismiss_report`, `add_keyword`, `remove_keyword`, `broadcast`, `update_settings`), `targetType`, `targetId`, `metadata` (Mixed), `ip`; indexes on `admin+createdAt`, `action+createdAt`, `targetType+targetId`.
-- **`src/models/AdminSettingModel.js`** — app settings KV: `key` (unique), `value` (Mixed), `label`, `description`, `updatedBy`.
-- **`src/services/adminService.js`** — `logAdminAction({admin, action, targetType, targetId, metadata, ip})` audit helper (swallows errors).
-- **`src/validations/adminValidation.js`** — Joi schemas for every admin endpoint (login, list users, user status/role, content lists, pin, broadcast, audit logs, settings).
-- **`src/controllers/adminController.js`** — full admin surface:
-  - `adminLogin` (role-gated: rejects non-admin after credential verification to avoid enumeration; honours 2FA challenge via `sign2FAChallenge`; issues tokens; `admin_login` audit + security-event log).
-  - Dashboard: `dashboardStats` (users/posts/reels/stories/comments/reports/engagement totals + flags) and `dashboardCharts` (7-day zero-filled signups/posts/likes/comments/follows/reactions).
-  - Users: `listUsers` (q/role/status filter), `getUserDetail` (+activity counts), `updateUserStatus` (ban/unban/activate/deactivate, revokes sessions on ban/deactivate; self-modification and superadmin-modification guards), `updateUserRole` (superadmin-only), `deleteUser` (cascading `deleteUserContent`: posts, stories, reels, own comments, comments on their posts, shares, follows, likes, reactions, saved, blocks, mutes, notifications, sessions, security logs).
-  - Content: `listPosts`/`deletePost`/`togglePinPost` (pin = superadmin-only), `listStories`/`deleteStory`, `listReels`/`deleteReel`, `listComments`/`deleteComment`, `getHashtags` (top-50 tag aggregate).
-  - `broadcastNotification` (admin/superadmin; to listed users or all active users; uses `notifyMany`), `listAuditLogs` (superadmin-only), `getSettings`/`updateSettings` (update = superadmin-only).
-  - `getAdminSelf`.
+Role is read from the authenticated user (`useAuth().user.role`; roles: `user`, `admin`, `superadmin`). Enforcement happens in two layers:
+
+1. **Route guards** — `ProtectedRoute` accepts `requireRoles`. The admin section uses `requireRoles={['admin','superadmin']}`; superadmin-only panels (role change, pin, audit logs, settings) use `requireRoles={['superadmin']}` so the `Navigate → /account` fallback fires for unauthorized roles.
+2. **Nav + in-page gating** — `RootLayout` renders the Admin nav group only for admin/superadmin, and hides superadmin-only items from admins. Pages additionally short-circuit with a "no access" panel if the required role is missing.
+
+Server-side enforcement is unchanged (`protect` + `authorize('admin','superadmin')` / `authorize('superadmin')`); the frontend gates are UX only and never the security boundary.
+
+#### New frontend files
+
+- **`src/api/adminApi.js`** — RTK Query slice for the full admin surface (dashboard stats/charts, users list/detail/status/role/delete, posts/stories/reels/comments list+delete, pin post, hashtags, broadcast, audit logs, settings, self). Adds tags `'AdminDashboard', 'AdminUsers', 'AdminContent', 'AdminAuditLogs', 'AdminSettings', 'AdminHashtags'` to `baseApi.tagTypes`.
+- **`src/utils/roles.js`** — `isAdmin(user)` / `isSuperAdmin(user)` helpers used by nav + pages.
+- **`src/components/admin/AdminPageLayout.jsx`** — shared admin page shell (title, description, max-width, Aurora background) + `StatCard` + status-pill/empty-state helpers.
+- **`src/pages/AdminLogin.jsx`** (`/admin/login`, guest) — posts to `/admin/login`; mirrors `Login.jsx` including the 2FA challenge hand-off to `/security/2fa/login`.
+- **`src/pages/AdminDashboard.jsx`** (`/admin`, protected admin) — stat cards grid from `/dashboard/stats` + dependency-free 7-day bar charts from `/dashboard/charts`.
+- **`src/pages/AdminUsers.jsx`** (`/admin/users`) — search + role/status filters, status badges, ban/unban/activate/deactivate, role change (superadmin), delete (confirm dialog).
+- **`src/pages/AdminPosts.jsx`** (`/admin/posts`) — status tabs (visible/flagged/deleted/all) + search, preview links, delete, pin/unpin (superadmin).
+- **`src/pages/AdminReels.jsx`** (`/admin/reels`) — status tabs + search, delete.
+- **`src/pages/AdminStories.jsx`** (`/admin/stories`) — list + search, delete.
+- **`src/pages/AdminComments.jsx`** (`/admin/comments`) — search, delete.
+- **`src/pages/AdminHashtags.jsx`** (`/admin/hashtags`) — top-hashtag leaderboard.
+- **`src/pages/AdminBroadcast.jsx`** (`/admin/broadcast`, superadmin) — message composer + type (`broadcast`/`admin_notice`), optional recipient user-ids (blank = all active users).
+- **`src/pages/AdminAuditLogs.jsx`** (`/admin/audit-logs`, superadmin) — action filter + log table (admin, action, target, ip, time).
+- **`src/pages/AdminSettings.jsx`** (`/admin/settings`, superadmin) — edit allowed keys (maintenanceMode, closedRegistration, maxPostLength, maxReelSeconds, tosUrl, bannerMessage).
 
 #### Admin endpoints (base `http://localhost:5000/api/v1/admin`)
 
@@ -1245,9 +1257,9 @@ Backend (Step 12) is complete and mounted at `/api/v1/admin`. The design is in `
 
 ### Acceptance Checklist (Step 12 UI — Admin Panel)
 
-- [ ] `/admin` login screen posts to `/admin/login` (role-gated; honours 2FA challenge if enabled)
-- [ ] Admin dashboard renders `/admin/dashboard/stats` + `/admin/dashboard/charts` (7-day trends)
-- [ ] Admin Users page lists/filters users; ban/unban/activate/deactivate + role change (superadmin) + delete
-- [ ] Admin content pages (`/posts`, `/reels`, `/stories`, `/comments`) list, search and remove content
-- [ ] Superadmin-only audit logs page (`/audit-logs`), broadcast, and settings management surfaces
-- [ ] All admin pages role-gated client-side + server-side (`protect` + `authorize`)
+- [x] `/admin` login screen posts to `/admin/login` (role-gated; honours 2FA challenge if enabled)
+- [x] Admin dashboard renders `/admin/dashboard/stats` + `/admin/dashboard/charts` (7-day trends)
+- [x] Admin Users page lists/filters users; ban/unban/activate/deactivate + role change (superadmin) + delete
+- [x] Admin content pages (`/posts`, `/reels`, `/stories`, `/comments`) list, search and remove content
+- [x] Superadmin-only audit logs page (`/audit-logs`), broadcast, and settings management surfaces
+- [x] All admin pages role-gated client-side + server-side (`protect` + `authorize`)
