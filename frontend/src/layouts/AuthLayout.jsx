@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import LandingLogo from '../components/landing/LandingLogo';
+import LandingNavbar from '../components/landing/LandingNavbar';
 import AuthVisual from '../components/auth/AuthVisual';
 import SocialAuth from '../components/auth/SocialAuth';
 import FeatureBar from '../components/auth/FeatureBar';
@@ -25,7 +25,8 @@ const AuthLayout = ({
 
   return (
     <div className="landing auth relative flex min-h-screen flex-col overflow-x-clip">
-      <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 py-10 sm:px-8 lg:flex-row lg:items-center lg:gap-16">
+      <LandingNavbar />
+      <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 pb-12 pt-28 sm:px-8 lg:flex-row lg:items-center lg:gap-16 lg:pt-24">
         {/* ---- Mobile / tablet brand header ---- */}
         <div className="mb-8 flex flex-col items-center text-center lg:hidden">
           <LandingLogo />

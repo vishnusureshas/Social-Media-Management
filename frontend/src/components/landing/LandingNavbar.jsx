@@ -19,7 +19,7 @@ const ThemeIcon = () => (
   </svg>
 );
 
-const LandingNavbar = ({ onToggleTheme }) => {
+const LandingNavbar = ({ onToggleTheme = () => {} }) => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
