@@ -328,17 +328,39 @@ const RootLayout = () => {
 
       {!isAuthenticated && (
         <div>
-          <nav className="fixed inset-x-0 top-0 z-40">
+          <nav className="fixed inset-x-0 top-0 z-40 border-b border-white/[0.06] bg-[rgba(7,9,24,0.55)] backdrop-blur-xl">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-              <Link to="/">
-                <Logo />
+              <Link to="/" aria-label="Vibely home" className="flex items-center gap-2.5">
+                <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 shadow-[0_0_26px_rgba(168,85,247,0.55)]">
+                  <svg viewBox="0 0 32 32" className="h-3/5 w-3/5" fill="none">
+                    <path d="M12 8l8 16 8-16" stroke="white" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-cyan-300" style={{ boxShadow: '0 0 12px 2px rgba(34,211,238,0.9)' }} />
+                </span>
+                <span
+                  className="font-display text-[1.35rem] font-extrabold tracking-tight text-white"
+                  style={{
+                    background: 'linear-gradient(100deg,#fff 0%,#e9d5ff 45%,#f5d0fe 70%,#a5f3fc 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                  }}
+                >
+                  Vibely
+                </span>
               </Link>
               <div className="flex items-center gap-3">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm">Log in</Button>
+                <Link
+                  to="/login"
+                  className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Log in
                 </Link>
-                <Link to="/register">
-                  <Button size="sm">Get started</Button>
+                <Link
+                  to="/register"
+                  className="rounded-xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_34px_rgba(168,85,247,0.7)]"
+                >
+                  Get started
                 </Link>
               </div>
             </div>

@@ -5,11 +5,11 @@ const Input = forwardRef(
   ({ label, error, icon: Icon, className = '', containerClassName = '', ...props }, ref) => (
     <div className={`w-full ${containerClassName}`}>
       {label && (
-        <label className="mb-2 block text-sm font-medium text-slate-600">{label}</label>
+        <label className="auth-label mb-2 block text-sm font-medium text-slate-600">{label}</label>
       )}
       <div className="relative">
         {Icon && (
-          <Icon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <Icon className="auth-icon pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
         )}
         <input
           ref={ref}

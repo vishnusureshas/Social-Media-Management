@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import AuthLayout from '../layouts/AuthLayout';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import AuroraBackground from '../components/ui/AuroraBackground';
 import { getApiErrorMessage, getFieldErrors } from '../utils/errorUtils';
 
 const schema = yup.object({
@@ -33,9 +32,55 @@ const schema = yup.object({
     .required('Confirm your password'),
 });
 
+const EyeIcon = ({ open }) =>
+  open ? (
+    <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none">
+      <path d="M3 3l18 18M10.5 10.5a2 2 0 003 3M7.4 7.4C4.9 8.8 3.5 11 3 12c1.5 3 4.5 6 9 6 1.7 0 3.3-.6 4.7-1.4M14.6 9.4A2 2 0 0117.5 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M21 12c-1.5 3-4.5 6-9 6-.7 0-1.4-.1-2-.3M9.5 6.3C10.3 6.1 11.1 6 12 6c4.5 0 7.5 3 9 6-.6 1.2-1.6 2.6-3 3.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  ) : (
+    <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+const PasswordField = ({ label, error, show, onToggle, ...props }) => (
+  <div className="relative">
+    <Input
+      label={label}
+      type={show ? 'text' : 'password'}
+      placeholder="••••••••"
+      error={error}
+      icon={({ className }) => (
+        <svg className={className} viewBox="0 0 24 24" fill="none">
+          <path d="M5 11h14v10H5V11zm7-6a4 4 0 00-4 4v2h8V9a4 4 0 00-4-4z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      {...props}
+    />
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute right-4 top-[42px]"
+      aria-label={show ? 'Hide password' : 'Show password'}
+    >
+      <EyeIcon open={show} />
+    </button>
+  </div>
+);
+
+const strengthColors = [
+  { bar: 'from-rose-500 to-rose-400', text: 'text-rose-300', label: 'Weak' },
+  { bar: 'from-amber-500 to-amber-400', text: 'text-amber-300', label: 'Okay' },
+  { bar: 'from-lime-500 to-lime-400', text: 'text-lime-300', label: 'Good' },
+  { bar: 'from-emerald-500 to-teal-400', text: 'text-emerald-300', label: 'Strong' },
+];
+
 const Register = () => {
   const [register] = useRegisterMutation();
   const [strength, setStrength] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -58,9 +103,6 @@ const Register = () => {
     setStrength(Math.min(score, 4));
   }, [password]);
 
-  const strengthColors = ['bg-rose-400', 'bg-amber-400', 'bg-lime-400', 'bg-emerald-500'];
-  const strengthLabels = ['Weak', 'Okay', 'Good', 'Strong'];
-
   const onSubmit = async (values) => {
     try {
       const { confirmPassword: _confirmPassword, ...payload } = values;
@@ -79,81 +121,119 @@ const Register = () => {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Join Nexus — connect with the world"
+      variant="register"
+      title="Create your account ✨"
+      subtitle="Start your journey with Vibely"
+      social
+      ctaWord="Sign up"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input
-            label="Username"
-            placeholder="@username"
-            error={errors.username?.message}
-            {...reg('username')}
-          />
-          <Input
-            label="Full name (optional)"
-            placeholder="Your name"
-            error={errors.fullName?.message}
-            {...reg('fullName')}
-          />
-        </div>
+        <Input
+          label="Full Name"
+          placeholder="Your name"
+          error={errors.fullName?.message}
+          icon={({ className }) => (
+            <svg className={className} viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M4 20a8 8 0 0116 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          )}
+          {...reg('fullName')}
+        />
 
         <Input
-          label="Email address"
+          label="Username"
+          placeholder="@username"
+          error={errors.username?.message}
+          icon={({ className }) => (
+            <svg className={className} viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          )}
+          {...reg('username')}
+        />
+
+        <Input
+          label="Email"
           type="email"
           placeholder="you@example.com"
           error={errors.email?.message}
+          icon={({ className }) => (
+            <svg className={className} viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16v12H4V6zm2 2l6 5 6-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
           {...reg('email')}
         />
 
         <div>
-          <Input
+          <PasswordField
             label="Password"
-            type="password"
-            placeholder="••••••••"
             error={errors.password?.message}
+            show={showPassword}
+            onToggle={() => setShowPassword((s) => !s)}
             {...reg('password')}
           />
           {password && (
-            <div className="mt-2">
+            <div className="mt-2.5">
               <div className="flex gap-1.5">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                      strength > i ? strengthColors[strength - 1] : 'bg-slate-200'
+                    className={`h-1.5 flex-1 rounded-full bg-white/10 transition-all duration-500 ${
+                      strength > i
+                        ? `bg-gradient-to-r ${strengthColors[strength - 1].bar}`
+                        : ''
                     }`}
                   />
                 ))}
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">
-                Password strength:{' '}
-                <span className="font-semibold">{strengthLabels[strength - 1]}</span>
+              <p className={`mt-1.5 text-xs font-semibold ${strength ? strengthColors[strength - 1].text : 'text-slate-500'}`}>
+                {password ? `Password strength: ${strengthColors[strength - 1].label}` : ''}
               </p>
             </div>
           )}
         </div>
 
-        <Input
-          label="Confirm password"
-          type="password"
-          placeholder="••••••••"
+        <PasswordField
+          label="Confirm Password"
           error={errors.confirmPassword?.message}
+          show={showConfirm}
+          onToggle={() => setShowConfirm((s) => !s)}
           {...reg('confirmPassword')}
         />
 
-        <Button type="submit" loading={isSubmitting} className="w-full" size="lg">
-          {isSubmitting ? 'Creating account...' : 'Create account'}
+        <label className="flex cursor-pointer items-start gap-2.5 pt-1 text-xs leading-relaxed text-slate-400">
+          <input type="checkbox" className="neon-check mt-0.5" />
+          <span>
+            I agree to the{' '}
+            <Link to="#" className="font-semibold text-violet-300 transition-colors hover:text-violet-200">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="#" className="font-semibold text-violet-300 transition-colors hover:text-violet-200">
+              Privacy Policy
+            </Link>
+          </span>
+        </label>
+
+        <Button variant="neon" type="submit" loading={isSubmitting} className="w-full" size="lg">
+          {isSubmitting ? 'Creating account...' : 'Create Account'}
+          {!isSubmitting && (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          )}
         </Button>
 
-        <p className="pt-2 text-center text-sm text-slate-500">
+        <p className="pt-1 text-center text-sm text-slate-400">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-gradient">
+          <Link to="/login" className="neon-text font-bold">
             Log in
           </Link>
         </p>
       </form>
-      <AuroraBackground />
     </AuthLayout>
   );
 };

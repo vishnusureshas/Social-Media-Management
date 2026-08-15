@@ -9,6 +9,8 @@ const variants = {
     'border border-brand-500 text-brand-600 hover:bg-brand-500 hover:text-white transition-all duration-300',
   danger:
     'bg-rose-500 text-white hover:bg-rose-600 transition-all duration-300 active:scale-95',
+  neon: 'btn-neon',
+  neonGhost: 'btn-ghost-neon',
 };
 
 const sizes = {

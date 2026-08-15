@@ -473,3 +473,144 @@
 @keyframes spinSlow {
   to { transform: rotate(360deg); }
 }
+
+/* ============================================================
+   Vibely — futuristic authentication (scoped to .auth)
+   Auth pages re-use the .landing scope (dark bg + utilities);
+   these rules fix form controls and small components for dark.
+   ============================================================ */
+
+.auth .input-base {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  box-shadow: none;
+}
+.auth .input-base::placeholder {
+  color: #66708f;
+}
+.auth .input-base:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.auth .input-base:focus {
+  border-color: var(--a-violet);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.16), 0 0 28px rgba(139, 92, 246, 0.25);
+}
+.auth .input-base.input-rose {
+  border-color: rgba(251, 113, 133, 0.5);
+}
+.auth .auth-label {
+  color: var(--muted);
+}
+.auth .auth-icon {
+  color: var(--faint);
+}
+
+.auth .otp-cell {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.auth .otp-cell:focus {
+  border-color: var(--a-violet);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.16), 0 0 24px rgba(139, 92, 246, 0.22);
+}
+
+/* custom glowing checkbox */
+.auth .neon-check {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.auth .neon-check:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.auth .neon-check:checked {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--a-violet), var(--a-pink));
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.55);
+}
+.auth .neon-check:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E")
+    center / 62% no-repeat;
+}
+
+.auth .social-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.85rem 0.5rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8ecff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.auth .social-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.9);
+}
+
+.auth .auth-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.85);
+}
+
+.auth .auth-corners::before,
+.auth .auth-corners::after {
+  content: '';
+  position: absolute;
+  width: 2.2rem;
+  height: 2.2rem;
+  pointer-events: none;
+}
+.auth .auth-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--a-violet);
+  border-left: 2px solid var(--a-violet);
+  border-top-left-radius: 1.6rem;
+}
+.auth .auth-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--a-pink);
+  border-right: 2px solid var(--a-pink);
+  border-bottom-right-radius: 1.6rem;
+}
+
+/* keep light-utility text legible on the dark auth canvas */
+.auth .text-slate-500,
+.auth .text-slate-600 {
+  color: var(--muted);
+}
+.auth .text-slate-700 {
+  color: #d5daf0;
+}
+.auth .text-brand-600,
+.auth .text-brand-700 {
+  color: #c4b5fd;
+}

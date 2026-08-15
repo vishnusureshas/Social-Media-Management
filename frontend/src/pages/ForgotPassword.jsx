@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import AuroraBackground from '../components/ui/AuroraBackground';
 import { getApiErrorMessage } from '../utils/errorUtils';
 
 const schema = yup.object({
@@ -55,17 +54,19 @@ const ForgotPassword = () => {
 
   return (
     <AuthLayout
-      title="Forgot password"
-      subtitle="We'll email you a code to reset your password"
+      variant="forgot"
+      title="Forgot your password?"
+      subtitle="Enter your email and we'll send you a secure code to reset it."
+      showTabs={false}
     >
       {sent ? (
-        <div className="space-y-4 text-center animate-scale-in">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
-            <svg className="h-7 w-7 text-emerald-600" viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <div className="space-y-4 text-center">
+          <div className="icon-orb mx-auto h-16 w-16 rounded-2xl">
+            <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-300">
             Reset code sent — redirecting to the reset page shortly...
           </p>
         </div>
@@ -76,19 +77,23 @@ const ForgotPassword = () => {
             type="email"
             placeholder="you@example.com"
             error={errors.email?.message}
+            icon={({ className }) => (
+              <svg className={className} viewBox="0 0 24 24" fill="none">
+                <path d="M4 6h16v12H4V6zm2 2l6 5 6-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
             {...register('email')}
           />
-          <Button type="submit" loading={isLoading} className="w-full" size="lg">
+          <Button variant="neon" type="submit" loading={isLoading} className="w-full" size="lg">
             {isLoading ? 'Sending...' : 'Send reset code'}
           </Button>
-          <p className="text-center text-sm text-slate-500">
-            <Link to="/login" className="font-semibold text-slate-700 hover:text-brand-600">
+          <p className="pt-1 text-center text-sm text-slate-400">
+            <Link to="/login" className="font-semibold text-violet-300 transition-colors hover:text-violet-200">
               ← Back to login
             </Link>
           </p>
         </form>
       )}
-      <AuroraBackground />
     </AuthLayout>
   );
 };

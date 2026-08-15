@@ -56,7 +56,7 @@ const OTPInput = ({ length = 6, value, onChange, error, autoFocus = true }) => {
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             className={cn(
-              'h-14 w-12 rounded-2xl border border-slate-200 bg-white/80 text-center text-xl font-bold text-slate-800 outline-none transition-all duration-200',
+              'otp-cell h-14 w-12 rounded-2xl border border-slate-200 bg-white/80 text-center text-xl font-bold text-slate-800 outline-none transition-all duration-200',
               'focus:border-brand-400 focus:ring-4 focus:ring-brand-500/10',
               char && 'border-brand-300 bg-brand-50/50',
               error && 'border-rose-300'

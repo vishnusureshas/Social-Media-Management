@@ -9,7 +9,6 @@ import { useState } from 'react';
 import AuthLayout from '../layouts/AuthLayout';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import AuroraBackground from '../components/ui/AuroraBackground';
 import { getApiErrorMessage, getFieldErrors } from '../utils/errorUtils';
 
 const schema = yup.object({
@@ -86,8 +85,10 @@ const Login = () => {
   if (twoFactorChallenge) {
     return (
       <AuthLayout
+        variant="forgot"
         title="Two-factor authentication"
         subtitle="Enter the 6-digit code from your authenticator app"
+        showTabs={false}
       >
         <form onSubmit={onSubmit2FA} className="space-y-5">
           <Input
@@ -104,26 +105,28 @@ const Login = () => {
               </svg>
             )}
           />
-          <Button type="submit" loading={submitting2FA} className="w-full" size="lg">
+          <Button type="submit" variant="neon" loading={submitting2FA} className="w-full" size="lg">
             {submitting2FA ? 'Verifying...' : 'Verify and log in'}
           </Button>
-          <p className="pt-2 text-center text-sm text-slate-500">
+          <p className="pt-1 text-center text-xs text-slate-500">
             Used a backup code? Enter it above. If you have no codes left, contact support.
           </p>
         </form>
-        <AuroraBackground />
       </AuthLayout>
     );
   }
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Log in to continue your journey on Nexus"
+      variant="login"
+      title="Welcome back 👋"
+      subtitle="Login to your account"
+      social
+      ctaWord="Continue"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <Input
-          label="Email address"
+          label="Email or Username"
           type="email"
           placeholder="you@example.com"
           defaultValue={email || ''}
@@ -152,35 +155,42 @@ const Login = () => {
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            className="absolute right-4 top-[38px]"
+            className="absolute right-4 top-[42px]"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             <EyeIcon open={showPassword} />
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex cursor-pointer items-center gap-2 text-slate-500">
-            <input type="checkbox" className="h-4 w-4 rounded border-slate-300 accent-brand-500" />
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <label className="flex cursor-pointer items-center gap-2.5 text-slate-400">
+            <input type="checkbox" className="neon-check rounded" />
             Remember me
           </label>
-          <Link to="/forgot-password" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link
+            to="/forgot-password"
+            className="font-semibold text-violet-300 transition-colors hover:text-violet-200"
+          >
             Forgot password?
           </Link>
         </div>
 
-        <Button type="submit" loading={isSubmitting} className="w-full" size="lg">
-          {isSubmitting ? 'Logging in...' : 'Log in'}
+        <Button variant="neon" type="submit" loading={isSubmitting} className="w-full" size="lg">
+          {isSubmitting ? 'Logging in...' : 'Log In'}
+          {!isSubmitting && (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          )}
         </Button>
 
-        <p className="pt-2 text-center text-sm text-slate-500">
-          New to Nexus?{' '}
-          <Link to="/register" className="font-semibold text-gradient">
-            Create an account
+        <p className="pt-1 text-center text-sm text-slate-400">
+          Don't have an account?{' '}
+          <Link to="/register" className="neon-text font-bold">
+            Sign up
           </Link>
         </p>
       </form>
-      <AuroraBackground />
     </AuthLayout>
   );
 };
