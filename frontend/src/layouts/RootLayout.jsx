@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import { useChatUnreadTotal } from '../hooks/useChatUnread';
 import { useGetUnreadCountQuery } from '../api/notificationApi';
 import RightRail from '../components/dashboard/RightRail';
-import DashboardTrending from '../components/dashboard/DashboardTrending';
 import cn from '../utils/cn';
 
 const icons = {
@@ -93,17 +92,20 @@ const NavIcon = ({ name, className = 'h-5 w-5' }) => (
   </svg>
 );
 
-const DashboardNav = [
+const primaryNav = [
   { to: '/feed', label: 'Home', icon: 'feed' },
   { to: '/explore', label: 'Explore', icon: 'explore' },
   { to: '/suggestions', label: 'Communities', icon: 'communities' },
+  { to: '/saved', label: 'Saved', icon: 'saved' },
+  { to: '/u', label: 'Profile', icon: 'profile' },
+];
+
+const socialNav = [
   { to: '/chat', label: 'Messages', icon: 'messages', chat: true },
   { to: '/notifications', label: 'Notifications', icon: 'notifications', notif: true },
-  { to: '/saved', label: 'Bookmarks', icon: 'bookmarks' },
-  { to: '/saved', label: 'Saved Posts', icon: 'saved' },
-  { to: '/u', label: 'Profile', icon: 'profile' },
-  { to: '/account', label: 'Settings', icon: 'settings' },
 ];
+
+const settingsNav = [{ to: '/account', label: 'Settings', icon: 'settings' }];
 
 const adminNav = [
   { to: '/admin', label: 'Dashboard', icon: 'dashboard' },
@@ -137,7 +139,7 @@ const NavRow = ({ to, label, icon, chat, notif, user, end, onClick }) => {
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          'group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+          'group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition-all duration-200',
           isActive
             ? 'dash-nav-active text-white'
             : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
@@ -158,9 +160,9 @@ const NavRow = ({ to, label, icon, chat, notif, user, end, onClick }) => {
 };
 
 const SidebarGroup = ({ title, items, user, onClick }) => (
-  <div className="space-y-1 px-3">
+  <div className="space-y-0.5 px-3">
     {title && (
-      <p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{title}</p>
+      <p className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{title}</p>
     )}
     {items.map((item) => (
       <NavRow key={`${item.to}-${item.label}`} {...item} user={user} onClick={onClick} />
@@ -170,7 +172,7 @@ const SidebarGroup = ({ title, items, user, onClick }) => (
 
 const DesktopSidebar = ({ user }) => (
   <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-white/[0.06] bg-[rgba(8,10,27,0.62)] backdrop-blur-2xl lg:flex">
-    <div className="border-b border-white/[0.06] p-6 pb-5">
+    <div className="border-b border-white/[0.06] px-6 py-5">
       <Link to="/feed" className="flex items-center gap-2.5">
         <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 shadow-[0_0_26px_rgba(168,85,247,0.55)]">
           <svg viewBox="0 0 32 32" className="h-3/5 w-3/5" fill="none">
@@ -192,10 +194,12 @@ const DesktopSidebar = ({ user }) => (
       </Link>
     </div>
 
-    <nav className="flex-1 space-y-5 overflow-y-auto py-4 [scrollbar-width:thin]">
-      <SidebarGroup items={DashboardNav} user={user} />
+    <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:thin]">
+      <SidebarGroup title="Menu" items={primaryNav} user={user} />
+      <SidebarGroup title="Social" items={socialNav} user={user} />
+      <SidebarGroup title="Settings" items={settingsNav} user={user} />
 
-      <div className="px-3">
+      <div className="px-3 pt-2">
         <Link
           to="/compose"
           className="btn-gradient flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white"
@@ -203,10 +207,6 @@ const DesktopSidebar = ({ user }) => (
           <NavIcon name="compose" className="h-4 w-4" />
           Create Post
         </Link>
-      </div>
-
-      <div className="px-3">
-        <DashboardTrending />
       </div>
 
       {['admin', 'superadmin'].includes(user?.role) && (
@@ -217,7 +217,7 @@ const DesktopSidebar = ({ user }) => (
       )}
     </nav>
 
-    <div className="border-t border-white/[0.06] p-5">
+    <div className="border-t border-white/[0.06] p-4">
       <div className="flex items-center gap-3 rounded-2xl bg-white/[0.03] p-2.5 ring-1 ring-white/[0.07]">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-bold text-white">
           {(user?.username || 'U')[0].toUpperCase()}
@@ -228,7 +228,7 @@ const DesktopSidebar = ({ user }) => (
         </div>
         <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 10px 1px rgba(52,211,153,0.8)' }} />
       </div>
-      <p className="mt-3 text-center text-[10px] font-medium text-slate-600">
+      <p className="mt-2.5 text-center text-[10px] font-medium text-slate-600">
         © {new Date().getFullYear()} Vibely · Connect. Share. Inspire.
       </p>
     </div>
@@ -483,15 +483,15 @@ const RootLayout = () => {
           <div className="lg:pl-72">
             <TopBar user={user} theme={theme} onToggleTheme={toggleTheme} onLogout={handleLogout} />
 
-            <div className="mx-auto max-w-[1280px] px-4 pb-28 pt-6 lg:px-8 lg:pb-16">
+            <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-5 lg:px-8 lg:pb-12">
               <div className={cn('flex items-start gap-8', rail && 'xl:justify-center')}>
                 <main className={cn('min-w-0 flex-1', rail && 'max-w-[680px]')}>
                   <Outlet />
                 </main>
 
                 {rail && (
-                  <aside className="hidden w-[360px] shrink-0 xl:block">
-                    <div className="sticky top-24 space-y-6">
+                  <aside className="hidden w-[350px] shrink-0 xl:block">
+                    <div className="sticky top-[5.5rem]">
                       <RightRail />
                     </div>
                   </aside>

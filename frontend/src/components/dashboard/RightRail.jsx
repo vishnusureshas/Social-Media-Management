@@ -5,6 +5,7 @@ import { useGetSuggestionsQuery } from '../../api/userApi';
 import { Avatar } from '../user/UserCard';
 import FollowButton from '../user/FollowButton';
 import Spinner from '../ui/Spinner';
+import DashboardTrending from './DashboardTrending';
 
 const formatCount = (n) => {
   const v = Number(n) || 0;
@@ -17,7 +18,7 @@ const ProfileCard = () => {
   const { user } = useAuth();
   const counts = user?.counts || {};
   return (
-    <div className="neon-frame relative overflow-hidden rounded-3xl p-5">
+    <div className="neon-frame relative overflow-hidden rounded-3xl p-4">
       <div className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-violet-600/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-14 -left-8 h-36 w-36 rounded-full bg-cyan-500/20 blur-3xl" />
       <div className="relative">
@@ -34,13 +35,13 @@ const ProfileCard = () => {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           {[
             { k: 'Posts', v: counts.posts ?? 0 },
             { k: 'Followers', v: counts.followers ?? 0 },
             { k: 'Following', v: counts.following ?? 0 },
           ].map((s) => (
-            <div key={s.k} className="rounded-2xl bg-white/[0.05] px-2 py-2.5 ring-1 ring-white/10">
+            <div key={s.k} className="rounded-2xl bg-white/[0.05] px-2 py-2 ring-1 ring-white/10">
               <p className="font-display text-base font-extrabold text-white">{formatCount(s.v)}</p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{s.k}</p>
             </div>
@@ -49,7 +50,7 @@ const ProfileCard = () => {
 
         <Link
           to={`/u/${user?.username}`}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 py-2.5 text-sm font-bold text-white shadow-[0_0_26px_rgba(168,85,247,0.5)] transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_38px_rgba(168,85,247,0.7)]"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 py-2.5 text-sm font-bold text-white shadow-[0_0_26px_rgba(168,85,247,0.5)] transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_38px_rgba(168,85,247,0.7)]"
         >
           View Profile
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +66,7 @@ const SuggestionRow = ({ user }) => {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
   return (
-    <div className="group flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-white/[0.05]">
+    <div className="group flex items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors hover:bg-white/[0.05]">
       <Link to={`/u/${user.username}`} className="shrink-0">
         <Avatar user={user} size="sm" />
       </Link>
@@ -100,7 +101,7 @@ const SuggestionsCard = ({ title = 'Suggested for you', limit = 3, link = '/sugg
   const suggestions = (data?.data?.suggestions || []).slice(0, limit);
 
   return (
-    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-5 backdrop-blur-xl">
+    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-base font-bold text-white">{title}</h3>
         <Link to={link} className="text-xs font-semibold text-slate-400 transition-colors hover:text-violet-300">
@@ -109,7 +110,7 @@ const SuggestionsCard = ({ title = 'Suggested for you', limit = 3, link = '/sugg
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-6">
+        <div className="flex justify-center py-5">
           <Spinner size="sm" />
         </div>
       ) : suggestions.length === 0 ? (
@@ -117,7 +118,7 @@ const SuggestionsCard = ({ title = 'Suggested for you', limit = 3, link = '/sugg
           No suggestions right now — you're all caught up!
         </p>
       ) : (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 space-y-0.5">
           {suggestions.map((s) => (
             <SuggestionRow key={s._id} user={s} />
           ))}
@@ -150,7 +151,7 @@ const UpcomingEvents = () => {
   ];
 
   return (
-    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-5 backdrop-blur-xl">
+    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-base font-bold text-white">Upcoming Events</h3>
         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm text-white shadow-glow">
@@ -160,13 +161,13 @@ const UpcomingEvents = () => {
         </span>
       </div>
 
-      <div className="mt-3 space-y-2.5">
+      <div className="mt-3 space-y-2">
         {events.map((e) => (
           <div
             key={e.title}
-            className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 transition-all duration-300 hover:border-violet-400/40 hover:bg-white/[0.06]"
+            className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2.5 transition-all duration-300 hover:border-violet-400/40 hover:bg-white/[0.06]"
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] text-xl ring-1 ring-white/10">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] text-lg ring-1 ring-white/10">
               {e.icon}
             </span>
             <div className="min-w-0 flex-1">
@@ -190,15 +191,11 @@ const UpcomingEvents = () => {
 };
 
 const RightRail = () => (
-  <div className="space-y-6">
+  <div className="space-y-4">
     <ProfileCard />
-    <SuggestionsCard title="Suggested for you" limit={3} link="/suggestions" />
+    <DashboardTrending />
+    <SuggestionsCard title="Who to follow" limit={3} link="/suggestions" />
     <UpcomingEvents />
-    <SuggestionsCard
-      title="Who to follow"
-      limit={3}
-      link="/suggestions"
-    />
   </div>
 );
 

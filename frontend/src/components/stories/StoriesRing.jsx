@@ -15,8 +15,8 @@ const StoriesRing = ({ ownStoryHandler }) => {
 
   return (
     <>
-      <div className="rounded-3xl border border-white/[0.09] bg-white/[0.045] p-5 backdrop-blur-xl">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="rounded-3xl border border-white/[0.09] bg-white/[0.045] p-4 backdrop-blur-xl">
+        <div className="mb-3 flex items-center justify-between">
           <p className="dash-chip">
             <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-violet-400 to-fuchsia-400" />
             Stories

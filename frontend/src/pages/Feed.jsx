@@ -60,13 +60,13 @@ const Feed = () => {
         <div className="group rounded-3xl border border-white/[0.09] bg-white/[0.045] p-4 backdrop-blur-xl transition-all duration-300 hover:border-violet-400/40 hover:bg-white/[0.06] hover:shadow-[0_24px_70px_-26px_rgba(139,92,246,0.5)]">
           <div className="flex items-center gap-3">
             <Avatar user={me} />
-            <div className="flex-1 rounded-2xl border border-white/[0.09] bg-white/[0.04] px-4 py-3.5 text-sm text-slate-400 transition-colors group-hover:border-violet-400/30">
+            <div className="flex-1 rounded-2xl border border-white/[0.09] bg-white/[0.04] px-4 py-3 text-sm text-slate-400 transition-colors group-hover:border-violet-400/30">
               What's on your mind, {firstName}?
             </div>
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-white/[0.07] pt-3">
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-0.5">
               {composerActions.map((a) => (
                 <span
                   key={a.label}
@@ -94,7 +94,7 @@ const Feed = () => {
       ) : posts.length === 0 ? (
         <EmptyState text="Your feed is empty. Follow people or create your first post!" />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {posts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}
@@ -102,7 +102,7 @@ const Feed = () => {
       )}
 
       {hasMore && !isLoading && (
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <Button size="lg" onClick={loadMore} loading={isFetching}>
             Load more
           </Button>
@@ -113,13 +113,13 @@ const Feed = () => {
 };
 
 const PageShell = ({ children }) => (
-  <div className="space-y-6">
+  <div className="space-y-4">
     {children}
   </div>
 );
 
 const LoadingState = () => (
-  <div className="flex justify-center py-20">
+  <div className="flex justify-center py-14">
     <Spinner />
   </div>
 );

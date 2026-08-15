@@ -38,7 +38,7 @@ const DashboardTrending = ({ limit = 5 }) => {
       : FALLBACK.map((f, i) => ({ ...f, tag: f.tag, key: `fb-${i}` }));
 
   return (
-    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-5 backdrop-blur-xl">
+    <div className="rounded-3xl border border-white/[0.09] bg-white/[0.04] p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between">
         <p className="dash-chip">
           <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-violet-400 to-fuchsia-400" />
@@ -49,10 +49,10 @@ const DashboardTrending = ({ limit = 5 }) => {
         </Link>
       </div>
 
-      {isLoading && <p className="mt-4 text-xs text-slate-500">Loading trends…</p>}
-      {isError && <p className="mt-4 text-xs text-slate-500">Trends unavailable.</p>}
+      {isLoading && <p className="mt-3 text-xs text-slate-500">Loading trends…</p>}
+      {isError && <p className="mt-3 text-xs text-slate-500">Trends unavailable.</p>}
 
-      <ul className="mt-3 space-y-1">
+      <ul className="mt-2 space-y-0.5">
         {trending.map((t, i) => {
           const tag = t.tag;
           const posts = t.count != null ? `${t.count} posts` : `${t.posts} posts`;
@@ -60,7 +60,7 @@ const DashboardTrending = ({ limit = 5 }) => {
             <li key={t.key || tag}>
               <Link
                 to={`/tag/${encodeURIComponent(tag)}`}
-                className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-white/[0.06]"
+                className="group flex items-center gap-3 rounded-2xl px-3 py-2 transition-colors hover:bg-white/[0.06]"
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-[10px] font-bold text-slate-500 group-hover:text-violet-300">
                   {i + 1}
