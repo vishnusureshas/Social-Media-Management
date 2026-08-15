@@ -7,6 +7,7 @@ import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
 import { notifyMany } from '../utils/notify.js';
 import { getSuppressedIds } from '../utils/suppression.js';
+import { autoModerate } from '../services/moderationService.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 
@@ -60,6 +61,11 @@ const createStory = async (req, res, next) => {
     });
 
     await User.updateOne({ _id: req.userId }, { $inc: { 'counts.stories': 1 } });
+
+    const moderation = await autoModerate(Story, story._id, text);
+    if (moderation.flagged) {
+      story.isFlagged = true;
+    }
 
     const mentioned = mentions || (await findMentionedUsers(text || ''));
     await notifyMany({

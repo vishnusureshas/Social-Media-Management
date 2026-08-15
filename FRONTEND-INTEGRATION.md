@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security).
+> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security, Step 10: Chat, Step 11: Reports & Moderation).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -23,6 +23,7 @@ Backend readiness status:
 | Step 8       | Notifications (likes, comments, follows, mentions, shares, unread badge) | ✅ Done |
 | Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
 | Step 10      | Chat (DM + group, socket, typing/read receipts, presence) | ✅ Done |
+| Step 11      | Reports & Moderation (report content, admin triage, auto keyword filter) | ✅ Done (backend) |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -1124,3 +1125,60 @@ Server → Client:
 - [ ] `nobody` / `followers` DM policies and blocked users are rejected with the server's message
 - [ ] Presence dot shows online peers in the inbox and a `presence:update` broadcast reflects online/offline + `lastSeen`
 - [ ] Socket reconnects using the current access token; a rotated token swaps the socket without a full page reload
+
+### Step 11 — Reports & Moderation (backend integration)
+
+Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `/api/v1/admin` (admin-only). The design is in `BACKEND-DESIGN.md` (Report model, lines 438–453; REPORTS endpoints, lines 707–711; ModerationKeyword model; ADMIN reports + keywords endpoints, lines 753–765). Frontend UI is pending.
+
+#### Backend modules (all new)
+
+| File | Purpose |
+|------|---------|
+| `models/Report.js` | report (`targetType` user/post/comment/reel/story/message, `reason`, `status`, `actionTaken`, `handledBy`) |
+| `models/ModerationKeyword.js` | auto-moderation keyword list (`keyword`, `matchType` exact/includes, `isActive`) |
+| `services/moderationService.js` | cached keyword scan + `autoModerate` flag helper |
+| `validations/reportValidation.js` | Joi schemas (create report, resolve, queries, keyword create, id param) |
+| `controllers/reportController.js` | `POST /reports`, `GET /reports/my` (+ `report_resolved` notification on triage) |
+| `controllers/moderationController.js` | admin report queue + stats + keyword CRUD |
+| `routes/reportRoutes.js` | mounted at `/api/v1/reports` (all `protect`) |
+| `routes/adminRoutes.js` | mounted at `/api/v1/admin` (all `protect` + `authorize('admin','superadmin')`) |
+
+#### User-facing endpoints (base `http://localhost:5000/api/v1/reports`, all `protect`)
+
+| Method | Endpoint    | Body | Purpose |
+|--------|-------------|------|---------|
+| POST   | `/`         | `targetType`, `targetId`, `reason`, `description?` | Report content (rejects self-report + duplicate pending report) |
+| GET    | `/my?page&limit` | — | My submitted reports + statuses (`{ reports, pagination }`) |
+
+- `targetType` enum: `user | post | comment | reel | story | message`.
+- `reason` enum: `spam | harassment | hate_speech | violence | nudity | false_info | scam | copyright | other`.
+- Creating a report returns `{ report: { _id, targetType, targetId, reason, status, createdAt } }`; the content owner is not notified at submission time.
+
+#### Admin endpoints (base `http://localhost:5000/api/v1/admin`, `protect` + `authorize('admin','superadmin')`)
+
+| Method | Endpoint | Body | Purpose |
+|--------|----------|------|---------|
+| GET    | `/reports?status&page&limit` | — | Moderation queue (filterable by status, default all) — `{ reports, pagination }` |
+| GET    | `/reports/stats` | — | Queue counts `{ stats: { pending, reviewing, resolved, dismissed, total } }` |
+| PATCH  | `/reports/:id` | `status` (`resolved`\|`dismissed`), `actionTaken?` | Triage a report; notifies the reporter (`report_resolved`) |
+| GET    | `/keywords` | — | List moderation keywords |
+| POST   | `/keywords` | `keyword`, `matchType?` | Add a keyword (lowercased, unique); invalidates the keyword cache |
+| DELETE | `/keywords/:id` | — | Remove a keyword; invalidates the keyword cache |
+
+- Report rows include `reportedBy` + `handledBy` populated (username, fullName, avatar, verified, counts).
+- Evergreen reports (`resolved`/`dismissed`) cannot be re-triaged (409).
+
+#### Auto-moderation keyword filter
+
+- Content creation now scans **post content, story text, reel caption, and comment text** via `moderationService.scanForKeywords`.
+- On a match, `autoModerate` sets `isFlagged: true` on the created doc (Post/Story/Reel already had `isFlagged`; Comment gained the field), so flagged content surfaces in the admin queue. Keyword list is cached (`moderation:keywords:v1`, 5min) and invalidated on keyword add/remove.
+- `matchType: 'exact'` matches whole words only (word-boundary regex); `'includes'` matches the keyword anywhere in the text (case-insensitive).
+
+### Acceptance Checklist (Step 11 UI — Reports & Moderation, pending)
+
+- [ ] Report action on posts/users/comments/reels/stories opens a reason picker (`POST /reports`) and confirms with a toast; duplicate pending reports are rejected with the server message
+- [ ] `/reports/my` lists submitted reports with live status badges (pending → resolved/dismissed)
+- [ ] Admin dashboard `/admin` (role-gated) lists the report queue with status filter + queue stats
+- [ ] Admin can resolve (with an action note) or dismiss a report; the reporter gets a `report_resolved` notification
+- [ ] Admin keyword manager lists/adds/removes moderation keywords; adding a keyword immediately flags newly created posts/stories/reels/comments containing it
+- [ ] Flagged (`isFlagged`) content is visible in the admin queue for triage; blocked/muted suppression still applies server-side

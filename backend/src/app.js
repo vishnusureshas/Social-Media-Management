@@ -21,6 +21,8 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import privacyRoutes from './routes/privacyRoutes.js';
 import securityRoutes from './routes/securityRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
@@ -74,6 +76,8 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/privacy', privacyRoutes);
 app.use('/api/v1/security', securityRoutes);
 app.use('/api/v1/chat/conversations', chatRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

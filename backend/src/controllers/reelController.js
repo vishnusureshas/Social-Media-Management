@@ -9,6 +9,7 @@ import APIError from '../utils/AppError.js';
 import { uploadReelToCloudinary } from '../middlewares/upload.js';
 import { notifyOne, notifyMany } from '../utils/notify.js';
 import { getSuppressedIds } from '../utils/suppression.js';
+import { autoModerate } from '../services/moderationService.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const MAX_REEL_SECONDS = 90;
@@ -74,6 +75,11 @@ const createReel = async (req, res, next) => {
       mentions: mentioned,
       durationSec: Math.round(uploaded.duration) || undefined,
     });
+
+    const moderation = await autoModerate(Reel, reel._id, caption);
+    if (moderation.flagged) {
+      reel.isFlagged = true;
+    }
 
     await notifyMany({
       recipients: mentioned,

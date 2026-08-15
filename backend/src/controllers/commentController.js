@@ -5,6 +5,7 @@ import Like from '../models/LikeModel.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { notifyOne } from '../utils/notify.js';
+import { autoModerate } from '../services/moderationService.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio';
 
@@ -30,6 +31,11 @@ const addComment = async (req, res, next) => {
     });
 
     await Post.updateOne({ _id: post }, { $inc: { commentsCount: 1 } });
+
+    const moderation = await autoModerate(Comment, comment._id, content);
+    if (moderation.flagged) {
+      comment.isFlagged = true;
+    }
 
     await notifyOne({
       recipient: targetPost.author,

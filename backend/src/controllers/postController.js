@@ -10,6 +10,7 @@ import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
 import { notifyOne, notifyMany } from '../utils/notify.js';
 import { getSuppressedIds } from '../utils/suppression.js';
+import { autoModerate } from '../services/moderationService.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const REACTION_EMOJIS = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
@@ -152,6 +153,11 @@ const createPost = async (req, res, next) => {
     });
 
     await User.updateOne({ _id: req.userId }, { $inc: { 'counts.posts': 1 } });
+
+    const moderation = await autoModerate(Post, post._id, content);
+    if (moderation.flagged) {
+      post.isFlagged = true;
+    }
 
     await notifyMany({
       recipients: mentions,

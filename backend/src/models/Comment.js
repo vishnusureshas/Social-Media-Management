@@ -8,6 +8,7 @@ const commentSchema = new mongoose.Schema(
     parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
     content: { type: String, trim: true, required: [true, 'Comment cannot be empty'], maxlength: 2000 },
     isDeleted: { type: Boolean, default: false },
+    isFlagged: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
