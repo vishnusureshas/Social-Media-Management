@@ -7,6 +7,7 @@ import User from '../models/User.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadReelToCloudinary } from '../middlewares/upload.js';
+import { notifyOne, notifyMany } from '../utils/notify.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const MAX_REEL_SECONDS = 90;
@@ -62,14 +63,25 @@ const createReel = async (req, res, next) => {
           }
         : undefined;
 
+    const mentioned = await findMentionedUsers(caption);
     const reel = await Reel.create({
       author: req.userId,
       video: { url: uploaded.url, thumbnail: uploaded.thumbnail },
       caption: caption || '',
       audio,
       tags: extractTags(caption),
-      mentions: await findMentionedUsers(caption),
+      mentions: mentioned,
       durationSec: Math.round(uploaded.duration) || undefined,
+    });
+
+    await notifyMany({
+      recipients: mentioned,
+      type: 'mention',
+      actor: req.userId,
+      targetType: 'reel',
+      targetId: reel._id,
+      targetModel: 'Reel',
+      message: 'mentioned you in a reel.',
     });
 
     const populated = await Reel.findById(reel._id).populate('author', USER_FIELDS);
@@ -242,6 +254,16 @@ const likeReel = async (req, res, next) => {
     });
     await Reel.updateOne({ _id: reel._id }, { $inc: { likesCount: 1 } });
 
+    await notifyOne({
+      recipient: reel.author,
+      type: 'like',
+      actor: req.userId,
+      targetType: 'reel',
+      targetId: reel._id,
+      targetModel: 'Reel',
+      message: 'liked your reel.',
+    });
+
     sendSuccess(res, 200, 'Reel liked.', { liked: true, likesCount: reel.likesCount + 1 });
   } catch (err) {
     next(err);
@@ -288,6 +310,15 @@ const shareReel = async (req, res, next) => {
     if (newShares.length) {
       await Share.insertMany(newShares);
       await Reel.updateOne({ _id: reel._id }, { $inc: { sharesCount: newShares.length } });
+      await notifyMany({
+        recipients: recipientIds,
+        type: 'share',
+        actor: req.userId,
+        targetType: 'reel',
+        targetId: reel._id,
+        targetModel: 'Reel',
+        message: 'shared a reel with you.',
+      });
     }
 
     sendSuccess(res, 200, 'Reel shared.', {
@@ -380,6 +411,16 @@ const addReelComment = async (req, res, next) => {
     });
 
     await Reel.updateOne({ _id: reel._id }, { $inc: { commentsCount: 1 } });
+
+    await notifyOne({
+      recipient: reel.author,
+      type: 'comment',
+      actor: req.userId,
+      targetType: 'reel',
+      targetId: reel._id,
+      targetModel: 'Reel',
+      message: parent ? 'replied to your comment.' : 'commented on your reel.',
+    });
 
     const populated = await Comment.findById(comment._id).populate('author', USER_FIELDS);
     sendSuccess(res, 201, 'Comment added.', { comment: populated });

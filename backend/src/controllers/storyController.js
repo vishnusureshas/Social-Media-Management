@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
+import { notifyMany } from '../utils/notify.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 
@@ -58,6 +59,17 @@ const createStory = async (req, res, next) => {
     });
 
     await User.updateOne({ _id: req.userId }, { $inc: { 'counts.stories': 1 } });
+
+    const mentioned = mentions || (await findMentionedUsers(text || ''));
+    await notifyMany({
+      recipients: mentioned,
+      type: 'mention',
+      actor: req.userId,
+      targetType: 'story',
+      targetId: story._id,
+      targetModel: 'Story',
+      message: 'mentioned you in a story.',
+    });
 
     const populated = await Story.findById(story._id).populate('author', USER_FIELDS);
     sendSuccess(res, 201, 'Story created.', { story: populated });

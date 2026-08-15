@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document only covers the **currently implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts).
+> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -16,7 +16,11 @@ Backend readiness status:
 | Step 1       | Backend setup, health check, Atlas, ESM    | ✅ Done |
 | Step 2       | Auth (register, verify, login, refresh, logout, reset) | ✅ Done |
 | Step 3       | User (profile CRUD, follow, search, suggestions, avatar/cover upload) | ✅ Done |
-| Step 4       | Posts (CRUD, feed, like, save, share, hashtags, explore, trending) + Comments | ✅ Done (backend only) |
+| Step 4       | Posts (CRUD, feed, like, save, share, hashtags, explore, trending) + Comments | ✅ Done |
+| Step 5       | Reactions (multi-emoji) + Polls            | ✅ Done |
+| Step 6       | Stories (24h ephemeral, views, viewers)    | ✅ Done |
+| Step 7       | Reels (short-form video, algorithmic feed) | ✅ Done |
+| Step 8       | Notifications (likes, comments, follows, mentions, shares, unread badge) | ✅ Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -812,13 +816,13 @@ Backend notes: stories auto-expire 24h after creation via TTL index on `expiresA
 
 ### Acceptance Checklist (Step 6 UI — Stories module)
 
-- [ ] Ring shows stories from followed users + the user's own; empty state when none
-- [ ] Clicking a ring item opens the viewer with progress bars that auto-advance every 5s
-- [ ] Video stories autoplay; image stories display; text stories render on the chosen background color
-- [ ] Each open registers a view; the view counter increments and the viewers list works on own stories only (403 for others' stories, 404 if missing/expired)
-- [ ] ← / → / Esc navigation and pause work; stories expire server-side 24h after creation (TTL index) and drop out of the ring
-- [ ] "+ Your story" opens the composer; text and media both publish; new story appears in the ring
-- [ ] Deleting a story removes it from the ring for everyone; `Stories`/`Profile` tags keep counts fresh
+- [x] Ring shows stories from followed users + the user's own; empty state when none
+- [x] Clicking a ring item opens the viewer with progress bars that auto-advance every 5s
+- [x] Video stories autoplay; image stories display; text stories render on the chosen background color
+- [x] Each open registers a view; the view counter increments and the viewers list works on own stories only (403 for others' stories, 404 if missing/expired)
+- [x] ← / → / Esc navigation and pause work; stories expire server-side 24h after creation (TTL index) and drop out of the ring
+- [x] "+ Your story" opens the composer; text and media both publish; new story appears in the ring
+- [x] Deleting a story removes it from the ring for everyone; `Stories`/`Profile` tags keep counts fresh
 
 ### Step 7 — Reels module (frontend integration plan)
 
@@ -866,13 +870,54 @@ useAddReelCommentMutation()                    // POST /reels/:id/comments {cont
 
 ### Acceptance Checklist (Step 7 UI — Reels module)
 
-- [ ] `/reels` route in nav opens a full-screen vertical reel player; first reel autoplays with sound-off toggle
-- [ ] Feed ordering follows the server `cursor` exactly (algorithmic ranking maintained across pages); load-more prepends/continues on scroll
-- [ ] Caption + author row render on the video with a 9:16 thumbnail poster while it buffers
-- [ ] Like toggles instantly (optimistic) and settles to `likesCount` + `isLiked` from the server; reactions summary for the reel matches
-- [ ] Share increments `sharesCount` on the focused reel only (no double-fire on scroll)
-- [ ] Views increment once per focused reel; plays record on the first real `onPlay` only
-- [ ] Comments open a sheet with post-style comments + replies; new comments increment `commentsCount` on the active reel
-- [ ] Create flow reports a specific error when the server rejects an oversize/non-video/`>90s` file; successful upload appears in the feed
-- [ ] Own reels show Delete and remove the reel everywhere after confirm
-- [ ] `Reels`/`Reel`/`Profile` tags keep the page, like counts, and profile counts consistent after mutations
+- [x] `/reels` route in nav opens a full-screen vertical reel player; first reel autoplays with sound-off toggle
+- [x] Feed ordering follows the server `cursor` exactly (algorithmic ranking maintained across pages); load-more prepends/continues on scroll
+- [x] Caption + author row render on the video with a 9:16 thumbnail poster while it buffers
+- [x] Like toggles instantly (optimistic) and settles to `likesCount` + `isLiked` from the server; reactions summary for the reel matches
+- [x] Share increments `sharesCount` on the focused reel only (no double-fire on scroll)
+- [x] Views increment once per focused reel; plays record on the first real `onPlay` only
+- [x] Comments open a sheet with post-style comments + replies; new comments increment `commentsCount` on the active reel
+- [x] Create flow reports a specific error when the server rejects an oversize/non-video/`>90s` file; successful upload appears in the feed
+- [x] Own reels show Delete and remove the reel everywhere after confirm
+- [x] `Reels`/`Reel`/`Profile` tags keep the page, like counts, and profile counts consistent after mutations
+
+#### Share-to-contacts (Instagram-style, added after checklist)
+
+Verified working: tapping Share opens `ReelShareSheet` (searchable contact list = people you follow), multi-select, "Send to N"; `POST /reels/:id/share` accepts `{ recipients }`, records per-recipient `Share` docs (deduped), bumps `sharesCount` by new recipients, and notifies each recipient. Recipients see the reel in the `/reels/shared` inbox (`SharedReels.jsx`, nav "Shared") with a "shared this" badge and can like/comment/re-share onward.
+
+### Step 8 — Notifications module (frontend integration plan)
+
+Backend (Step 8) is complete and mounted at `/api/v1/notifications`. The design is in `BACKEND-DESIGN.md` (Notification model, lines 379–393; NOTIFICATIONS endpoints, lines 690–696). Backend event wiring emits notifications automatically on: follow, post like/comment/share/mention, reel like/comment/share/mention, story mention.
+
+#### API module — `src/api/notificationApi.js`
+
+```js
+useGetNotificationsQuery({ cursor, limit })      // GET /notifications          → 'Notifications'
+useGetUnreadCountQuery()                         // GET /notifications/unread-count → 'NotificationCount'
+useMarkAllReadMutation()                         // PUT /notifications/read
+useMarkOneReadMutation(id)                       // PUT /notifications/:id/read
+```
+
+- Tag strategy: `getNotifications` provides `'Notifications'`; `getUnreadCount` provides `'NotificationCount'` (polled ~30s via `pollingInterval`); both `markAllRead`/`markOneRead` invalidate `['Notifications','NotificationCount']` so the badge and list stay in sync.
+- Add `'Notifications', 'NotificationCount'` to `baseApi.tagTypes`.
+
+#### Backend contracts the UI must honor
+
+- `GET /notifications` → `{ notifications: [{ _id, type, actor{username,fullName,avatar,verified,counts}, targetType, targetId, message, read, seenAt, createdAt }], pagination: { cursor, hasMore } }`. Cursor is a bare ObjectId — pass it straight back.
+- `type` enum: `like | reaction | comment | follow | mention | share | message | story_reply | report_resolved | admin_notice | broadcast`. `targetType` enum: `post | reel | story | comment`; `targetId` points at the item via `targetModel`.
+- `PUT /notifications/read` marks all read; `PUT /notifications/:id/read` marks one (404 if not owned by viewer).
+
+#### Components
+
+- `src/components/notifications/NotificationBell.jsx` — bell icon in `RootLayout` nav; red badge shows unread count (99+ cap), polls every 30s; links to `/notifications`.
+- `src/pages/Notifications.jsx` (route `/notifications`, protected) — paginated feed of notification cards: actor avatar, verb text built from `type`/`targetType`, unread dot + highlight, relative time. Clicking a card marks it read (`markOneRead`) and deep-links (`/post/:id`, `/reels`, profile). Header "Mark all read" button when any unread. Load-more via `pagination.cursor` + RTK `merge`.
+
+### Acceptance Checklist (Step 8 UI — Notifications module)
+
+- [ ] `/notifications` route in nav (bell icon) shows the paginated notification feed; unread badge shows live count (polled)
+- [ ] Following a user sends a `follow` notification to that user with an avatar + verb row
+- [ ] Liking/commenting a post or reel notifies the author; sharing a reel notifies each recipient; mentions notify the mentioned users
+- [ ] Each card's unread dot/highlight clears when clicked and the badge count decrements after `markOneRead`
+- [ ] "Mark all read" clears the whole list and zeroes the badge
+- [ ] Cards deep-link correctly (post → `/post/:id`, reel → `/reels`, actor → profile)
+- [ ] `Notifications`/`NotificationCount` tags keep the list and badge consistent after mutations

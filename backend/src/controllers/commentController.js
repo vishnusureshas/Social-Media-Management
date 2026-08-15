@@ -4,6 +4,7 @@ import Comment from '../models/Comment.js';
 import Like from '../models/LikeModel.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
+import { notifyOne } from '../utils/notify.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio';
 
@@ -29,6 +30,16 @@ const addComment = async (req, res, next) => {
     });
 
     await Post.updateOne({ _id: post }, { $inc: { commentsCount: 1 } });
+
+    await notifyOne({
+      recipient: targetPost.author,
+      type: 'comment',
+      actor: req.userId,
+      targetType: 'post',
+      targetId: targetPost._id,
+      targetModel: 'Post',
+      message: parent ? 'replied to your comment.' : 'commented on your post.',
+    });
 
     const populated = await Comment.findById(comment._id).populate('author', USER_FIELDS);
     sendSuccess(res, 201, 'Comment added.', { comment: populated });

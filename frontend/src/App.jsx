@@ -26,6 +26,7 @@ import HashtagFeed from './pages/HashtagFeed';
 import SavedPosts from './pages/SavedPosts';
 import Reels from './pages/Reels';
 import SharedReels from './pages/SharedReels';
+import Notifications from './pages/Notifications';
 
 const App = () => (
   <>
@@ -81,6 +82,11 @@ const App = () => (
           <Route path="/explore" element={<Explore />} />
           <Route path="/tag/:hashtag" element={<HashtagFeed />} />
           <Route path="/saved" element={<SavedPosts />} />
+        </Route>
+
+        {/* Notifications (Step 8) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
 
         {/* Reels (Step 7) */}

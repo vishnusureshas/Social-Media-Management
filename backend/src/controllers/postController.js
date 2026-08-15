@@ -8,6 +8,7 @@ import Reaction from '../models/Reaction.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
+import { notifyOne, notifyMany } from '../utils/notify.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const REACTION_EMOJIS = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
@@ -151,6 +152,16 @@ const createPost = async (req, res, next) => {
 
     await User.updateOne({ _id: req.userId }, { $inc: { 'counts.posts': 1 } });
 
+    await notifyMany({
+      recipients: mentions,
+      type: 'mention',
+      actor: req.userId,
+      targetType: 'post',
+      targetId: post._id,
+      targetModel: 'Post',
+      message: 'mentioned you in a post.',
+    });
+
     const populated = await Post.findById(post._id)
       .populate('author', USER_FIELDS)
       .populate('poll');
@@ -288,6 +299,16 @@ const sharePost = async (req, res, next) => {
       User.updateOne({ _id: req.userId }, { $inc: { 'counts.posts': 1 } }),
     ]);
 
+    await notifyOne({
+      recipient: original.author,
+      type: 'share',
+      actor: req.userId,
+      targetType: 'post',
+      targetId: original._id,
+      targetModel: 'Post',
+      message: 'shared your post.',
+    });
+
     const populated = await Post.findById(share._id)
       .populate('author', USER_FIELDS)
       .populate('originalPost', 'content media author createdAt')
@@ -325,6 +346,16 @@ const likePost = async (req, res, next) => {
 
     await Like.create({ user: req.userId, targetType: 'post', targetId: post._id });
     await Post.updateOne({ _id: post._id }, { $inc: { likesCount: 1 } });
+
+    await notifyOne({
+      recipient: post.author,
+      type: 'like',
+      actor: req.userId,
+      targetType: 'post',
+      targetId: post._id,
+      targetModel: 'Post',
+      message: 'liked your post.',
+    });
 
     sendSuccess(res, 200, 'Post liked.', { liked: true, likesCount: post.likesCount + 1 });
   } catch (err) {

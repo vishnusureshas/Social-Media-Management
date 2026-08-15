@@ -3,6 +3,7 @@ import Logo from '../components/ui/Logo';
 import Button from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import { useLogoutMutation } from '../api/authApi';
+import NotificationBell from '../components/notifications/NotificationBell';
 import toast from 'react-hot-toast';
 
 const RootLayout = () => {
@@ -79,6 +80,7 @@ const RootLayout = () => {
                     Saved
                   </span>
                 </Link>
+                <NotificationBell />
                 <Link to="/reels">
                   <span className="glass inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-brand-300 hover:text-brand-600">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">

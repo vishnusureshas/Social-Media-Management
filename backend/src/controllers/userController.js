@@ -5,6 +5,7 @@ import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import * as cache from '../services/cacheService.js';
 import { uploadToCloudinary } from '../middlewares/upload.js';
+import { notifyOne } from '../utils/notify.js';
 
 const userCacheKey = (userId) => `user:${userId}`;
 const profileCacheKey = (username, viewerId) =>
@@ -163,6 +164,12 @@ const follow = async (req, res, next) => {
     await Promise.all([
       User.updateOne({ _id: req.userId }, { $inc: { 'counts.following': 1 } }),
       User.updateOne({ _id: target._id }, { $inc: { 'counts.followers': 1 } }),
+      notifyOne({
+        recipient: target._id,
+        type: 'follow',
+        actor: req.userId,
+        message: 'started following you.',
+      }),
     ]);
 
     await Promise.all([
