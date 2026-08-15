@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security, Step 10: Chat, Step 11: Reports & Moderation).
+> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security, Step 10: Chat, Step 11: Reports & Moderation, Step 12: Admin Panel).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -24,6 +24,7 @@ Backend readiness status:
 | Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
 | Step 10      | Chat (DM + group, socket, typing/read receipts, presence) | ✅ Done |
 | Step 11      | Reports & Moderation (report content, admin triage, auto keyword filter) | ✅ Done |
+| Step 12      | Admin Panel (dashboard, user/content management, audit logs, broadcast, settings) | ✅ Backend Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -1193,3 +1194,60 @@ Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `
 - [x] Admin can resolve (with an action note) or dismiss a report; the reporter gets a `report_resolved` notification
 - [x] Admin `/admin/keywords` lists/adds/removes moderation keywords; adding a keyword flags newly created posts/stories/reels/comments containing it
 - [x] Flagged (`isFlagged`) content is visible in the admin queue for triage; blocked/muted suppression still applies server-side
+
+### Step 12 — Admin Panel (backend integration)
+
+Backend (Step 12) is complete and mounted at `/api/v1/admin`. The design is in `BACKEND-DESIGN.md` (AdminActionLog model, lines 466–478; ADMIN endpoints, lines 739–769). Frontend UI is **not** yet integrated (next task).
+
+#### New backend files
+
+- **`src/models/AdminActionLogModel.js`** — audit-trail log: `admin`, `action` (enum incl. `admin_login`, `ban_user`, `unban_user`, `activate_user`, `deactivate_user`, `change_role`, `delete_user`, `delete_post`, `restore_post`, `pin_post`, `unpin_post`, `delete_story`, `delete_reel`, `delete_comment`, `resolve_report`, `dismiss_report`, `add_keyword`, `remove_keyword`, `broadcast`, `update_settings`), `targetType`, `targetId`, `metadata` (Mixed), `ip`; indexes on `admin+createdAt`, `action+createdAt`, `targetType+targetId`.
+- **`src/models/AdminSettingModel.js`** — app settings KV: `key` (unique), `value` (Mixed), `label`, `description`, `updatedBy`.
+- **`src/services/adminService.js`** — `logAdminAction({admin, action, targetType, targetId, metadata, ip})` audit helper (swallows errors).
+- **`src/validations/adminValidation.js`** — Joi schemas for every admin endpoint (login, list users, user status/role, content lists, pin, broadcast, audit logs, settings).
+- **`src/controllers/adminController.js`** — full admin surface:
+  - `adminLogin` (role-gated: rejects non-admin after credential verification to avoid enumeration; honours 2FA challenge via `sign2FAChallenge`; issues tokens; `admin_login` audit + security-event log).
+  - Dashboard: `dashboardStats` (users/posts/reels/stories/comments/reports/engagement totals + flags) and `dashboardCharts` (7-day zero-filled signups/posts/likes/comments/follows/reactions).
+  - Users: `listUsers` (q/role/status filter), `getUserDetail` (+activity counts), `updateUserStatus` (ban/unban/activate/deactivate, revokes sessions on ban/deactivate; self-modification and superadmin-modification guards), `updateUserRole` (superadmin-only), `deleteUser` (cascading `deleteUserContent`: posts, stories, reels, own comments, comments on their posts, shares, follows, likes, reactions, saved, blocks, mutes, notifications, sessions, security logs).
+  - Content: `listPosts`/`deletePost`/`togglePinPost` (pin = superadmin-only), `listStories`/`deleteStory`, `listReels`/`deleteReel`, `listComments`/`deleteComment`, `getHashtags` (top-50 tag aggregate).
+  - `broadcastNotification` (admin/superadmin; to listed users or all active users; uses `notifyMany`), `listAuditLogs` (superadmin-only), `getSettings`/`updateSettings` (update = superadmin-only).
+  - `getAdminSelf`.
+
+#### Admin endpoints (base `http://localhost:5000/api/v1/admin`)
+
+| Method | Endpoint | Access | Purpose |
+|--------|----------|--------|---------|
+| POST | `/login` | Public | Admin login (role-gated) |
+| GET | `/me` | admin/superadmin | Current admin profile |
+| GET | `/dashboard/stats` | admin/superadmin | Platform totals overview |
+| GET | `/dashboard/charts` | admin/superadmin | 7-day trend series |
+| GET | `/users` | admin/superadmin | List users (q/role/status) |
+| GET | `/users/:id` | admin/superadmin | User detail + activity |
+| PATCH | `/users/:id/status` | admin/superadmin | ban/unban/activate/deactivate |
+| PATCH | `/users/:id/role` | superadmin | Change user role |
+| DELETE | `/users/:id` | admin/superadmin | Delete user + content |
+| GET | `/posts` | admin/superadmin | List posts (q/status) |
+| DELETE | `/posts/:id` | admin/superadmin | Remove post (soft) |
+| PATCH | `/posts/:id/pin` | superadmin | Pin/unpin post |
+| GET | `/stories` | admin/superadmin | List stories |
+| DELETE | `/stories/:id` | admin/superadmin | Remove story |
+| GET | `/reels` | admin/superadmin | List reels (q/status) |
+| DELETE | `/reels/:id` | admin/superadmin | Remove reel |
+| GET | `/comments` | admin/superadmin | List comments |
+| DELETE | `/comments/:id` | admin/superadmin | Remove comment |
+| GET | `/hashtags` | admin/superadmin | Top hashtags |
+| POST | `/notifications/broadcast` | admin/superadmin | Broadcast notification |
+| GET | `/audit-logs` | superadmin | Audit trail |
+| GET | `/settings` | admin/superadmin | Read app settings |
+| PATCH | `/settings` | superadmin | Update app settings |
+| GET | `/reports`, `/reports/stats`, PATCH `/reports/:id` | admin/superadmin | (Step 11 report queue, still here) |
+| GET/POST/DELETE | `/keywords` | admin/superadmin | (Step 11 moderation keywords, still here) |
+
+### Acceptance Checklist (Step 12 UI — Admin Panel)
+
+- [ ] `/admin` login screen posts to `/admin/login` (role-gated; honours 2FA challenge if enabled)
+- [ ] Admin dashboard renders `/admin/dashboard/stats` + `/admin/dashboard/charts` (7-day trends)
+- [ ] Admin Users page lists/filters users; ban/unban/activate/deactivate + role change (superadmin) + delete
+- [ ] Admin content pages (`/posts`, `/reels`, `/stories`, `/comments`) list, search and remove content
+- [ ] Superadmin-only audit logs page (`/audit-logs`), broadcast, and settings management surfaces
+- [ ] All admin pages role-gated client-side + server-side (`protect` + `authorize`)
