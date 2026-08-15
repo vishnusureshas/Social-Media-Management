@@ -31,7 +31,7 @@ const extractTags = (text = '') => {
 const createStory = async (req, res, next) => {
   try {
     const { text, bgColor, mentions } = req.body;
-    const files = req.files || [];
+    const files = req.file ? [req.file] : req.files || [];
 
     if ((!text || !text.trim()) && files.length === 0) {
       throw new APIError(400, 'Story must have text or at least one media file.');
