@@ -8,6 +8,7 @@
     "start": "cross-env NODE_ENV=production node src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
     "lint": "eslint src --ext .js",
+    "seed:admins": "cross-env NODE_ENV=development node src/seed/seedAdmins.js",
     "test": "cross-env NODE_ENV=test jest --runInBand"
   },
   "keywords": [

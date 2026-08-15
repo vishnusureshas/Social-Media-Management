@@ -13,6 +13,19 @@ Express + MongoDB (Mongoose) + Socket.IO backend for the Social Media Platform.
 - `npm run dev` — dev server with nodemon + cross-env
 - `npm start` — production start
 - `npm test` — test suite (Jest)
+- `npm run seed:admins` — upsert demo `admin` + `superadmin` accounts (idempotent)
+
+## Demo admin accounts (seed only — do not use in production)
+
+Run `npm run seed:admins` to create/refresh these accounts in the configured DB:
+
+| Role       | Username    | Email                  | Password    |
+|------------|-------------|------------------------|-------------|
+| admin      | admin       | `admin@nexus.test`     | `Admin@123` |
+| superadmin | superadmin  | `superadmin@nexus.test`| `Super@123` |
+
+Sign in at `/admin/login` (or the normal login). Promotes on re-run, so it will
+reset these accounts to admin/superadmin if roles were changed.
 
 ## Structure
 
