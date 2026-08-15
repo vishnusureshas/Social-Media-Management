@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import Logo from '../ui/Logo';
+import LandingLogo from './LandingLogo';
 
 const columns = [
   {
@@ -7,14 +7,14 @@ const columns = [
     links: [
       { label: 'Features', href: '#features' },
       { label: 'Explore', href: '#explore' },
-      { label: 'Communities', href: '#explore' },
-      { label: 'Roadmap', href: '#' },
+      { label: 'Communities', href: '#communities' },
+      { label: 'Pricing', href: '#cta' },
     ],
   },
   {
     title: 'Company',
     links: [
-      { label: 'About', href: '#about' },
+      { label: 'About', href: '#' },
       { label: 'Careers', href: '#' },
       { label: 'Press', href: '#' },
       { label: 'Contact', href: '#' },
@@ -72,16 +72,16 @@ const socials = [
 ];
 
 const LandingFooter = () => (
-  <footer className="border-t border-slate-200/70 bg-white/60 backdrop-blur-sm">
-    <div className="mx-auto max-w-7xl px-6 py-16">
+  <footer className="relative border-t border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
+    <div className="radial-glow -top-24 left-1/2 h-48 w-[42rem] -translate-x-1/2 bg-violet-600/10" aria-hidden="true" />
+    <div className="relative mx-auto max-w-7xl px-6 py-16">
       <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
         <div>
           <Link to="/">
-            <Logo />
+            <LandingLogo />
           </Link>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-            The modern home for creators, friends and communities. Connect, share and
-            discover — beautifully.
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-slate-400">
+            The next-gen social platform where real connections meet endless possibilities.
           </p>
           <div className="mt-6 flex items-center gap-3">
             {socials.map((s) => (
@@ -89,7 +89,7 @@ const LandingFooter = () => (
                 key={s.label}
                 href={s.href}
                 aria-label={s.label}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/80 text-slate-500 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:text-brand-600 hover:shadow-soft"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/40 hover:text-white hover:shadow-[0_0_24px_rgba(139,92,246,0.35)]"
               >
                 {s.icon}
               </a>
@@ -100,14 +100,11 @@ const LandingFooter = () => (
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
           {columns.map((col) => (
             <div key={col.title}>
-              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">{col.title}</p>
+              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500">{col.title}</p>
               <ul className="space-y-3">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <a
-                      href={l.href}
-                      className="text-sm text-slate-600 transition-colors duration-300 hover:text-brand-600"
-                    >
+                    <a href={l.href} className="text-sm text-slate-400 transition-colors duration-300 hover:text-violet-300">
                       {l.label}
                     </a>
                   </li>
@@ -118,11 +115,9 @@ const LandingFooter = () => (
         </div>
       </div>
 
-      <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row">
-        <p className="text-sm text-slate-400">
-          © {new Date().getFullYear()} Nexus. All rights reserved.
-        </p>
-        <p className="text-sm text-slate-400">Connect. Share. Inspire.</p>
+      <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row">
+        <p className="text-sm text-slate-500">© {new Date().getFullYear()} Vibely. All rights reserved.</p>
+        <span className="neon-text text-sm font-semibold">Connect. Share. Inspire.</span>
       </div>
     </div>
   </footer>

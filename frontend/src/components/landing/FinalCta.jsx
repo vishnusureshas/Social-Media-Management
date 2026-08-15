@@ -1,51 +1,62 @@
 import { Link } from 'react-router-dom';
-import Button from '../ui/Button';
 import useReveal from '../../hooks/useReveal';
 
 const FinalCta = () => {
   const ref = useReveal();
 
   return (
-    <section id="about" ref={ref} className="relative py-24">
+    <section id="cta" ref={ref} className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="reveal relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-brand-600 via-violet-600 to-fuchsia-600 px-8 py-20 text-center shadow-soft-lg sm:px-16">
-          <div className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-fuchsia-400/30 blur-3xl" />
-          <div className="absolute inset-0 bg-grid opacity-20 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+        <div className="neon-border reveal relative overflow-hidden rounded-[2.5rem] px-8 py-20 text-center shadow-[0_40px_140px_-40px_rgba(139,92,246,0.6)] sm:px-16">
+          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            <div className="particles absolute inset-0 opacity-50" />
+            <div className="absolute inset-x-0 bottom-0 h-[18rem]">
+              {['40%', '30%', '45%'].map((top, i) => (
+                <div
+                  key={i}
+                  className="absolute inset-x-0 rounded-t-full"
+                  style={{
+                    top,
+                    height: '38%',
+                    background: 'linear-gradient(90deg, rgba(139,92,246,0.25), rgba(236,72,153,0.25), rgba(34,211,238,0.2))',
+                    filter: 'blur(34px)',
+                    left: `${i * 22 - 8}%`,
+                    right: `${i * 18 - 4}%`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="absolute -inset-px rounded-[2.5rem] bg-gradient-to-br from-violet-600/20 via-transparent to-pink-500/20 opacity-60" aria-hidden="true" />
 
           <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white backdrop-blur">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor"><path d="M12 2l2.4 5.6L20 9l-4.3 4.2L16.6 20 12 16.6 7.4 20l1-6.8L4 9l5.6-1.4L12 2z"/></svg>
-              Join the community
+            <span className="section-chip">
+              <span className="chip-dot" />
+              Start today
             </span>
-
-            <h2 className="mt-6 font-display text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Your people are waiting.
-              <br className="hidden sm:block" /> Say hello.
+            <h2 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Be Part of <span className="neon-text">Something Bigger</span>
             </h2>
-
-            <p className="mx-auto mt-5 max-w-xl text-lg text-white/80">
-              Create your free account in under a minute and start connecting with
-              120,000+ creators who call Nexus home.
+            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-400">
+              Vibely is more than a platform — it's a movement. Join today and start your journey.
             </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-11 flex flex-col items-center gap-4">
               <Link to="/register">
-                <Button size="lg" className="w-full bg-white text-brand-600 shadow-soft hover:bg-white hover:shadow-soft-lg sm:w-auto">
-                  Create your account
-                </Button>
+                <span className="btn-neon inline-flex items-center gap-2 rounded-2xl px-10 text-lg" style={{ padding: '1.1rem 2.5rem' }}>
+                  Create Your Account
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </span>
               </Link>
-              <Link to="/login">
-                <Button
-                  size="lg"
-                  className="w-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 sm:w-auto"
-                >
+              <p className="text-sm text-slate-400">
+                Already have an account?{' '}
+                <Link to="/login" className="font-semibold text-white underline decoration-violet-500/60 underline-offset-4 transition-colors hover:text-violet-300">
                   Log in
-                </Button>
-              </Link>
+                </Link>
+              </p>
             </div>
-
-            <p className="mt-6 text-sm text-white/60">Free forever. No credit card required.</p>
           </div>
         </div>
       </div>
