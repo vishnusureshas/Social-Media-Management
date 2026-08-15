@@ -45,6 +45,15 @@ const icons = {
   security: (
     <path d="M12 2l8 3.5v6c0 5.2-3.4 8.6-8 10.5-4.6-1.9-8-5.3-8-10.5v-6L12 2zM9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   ),
+  report: (
+    <path d="M3 3v18M3 5l15-1.5L16.5 9 18 18 3 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  ),
+  moderation: (
+    <path d="M12 21a9 9 0 100-18 9 9 0 000 18zM9 12.5l2 2 4-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  ),
+  keywords: (
+    <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8zM7 7h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  ),
 };
 
 const NavIcon = ({ name, className = 'h-5 w-5' }) => (
@@ -71,6 +80,12 @@ const socialNav = [
 const accountNav = [
   { to: '/privacy', label: 'Privacy', icon: 'privacy' },
   { to: '/security', label: 'Security', icon: 'security' },
+  { to: '/reports', label: 'My Reports', icon: 'report' },
+];
+
+const adminNav = [
+  { to: '/admin/reports', label: 'Moderation', icon: 'moderation' },
+  { to: '/admin/keywords', label: 'Keywords', icon: 'keywords' },
 ];
 
 const NavRow = ({ to, label, icon, chat, onClick, end }) => {
@@ -193,6 +208,9 @@ const RootLayout = () => {
               />
               <SidebarGroup title="Social" items={socialNav} />
               <SidebarGroup title="Account" items={accountNav} />
+              {['admin', 'superadmin'].includes(user?.role) && (
+                <SidebarGroup title="Moderation" items={adminNav} />
+              )}
             </nav>
 
             <div className="border-t border-slate-200/60 p-4">

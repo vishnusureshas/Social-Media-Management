@@ -23,7 +23,7 @@ Backend readiness status:
 | Step 8       | Notifications (likes, comments, follows, mentions, shares, unread badge) | ✅ Done |
 | Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
 | Step 10      | Chat (DM + group, socket, typing/read receipts, presence) | ✅ Done |
-| Step 11      | Reports & Moderation (report content, admin triage, auto keyword filter) | ✅ Done (backend) |
+| Step 11      | Reports & Moderation (report content, admin triage, auto keyword filter) | ✅ Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -1126,9 +1126,9 @@ Server → Client:
 - [ ] Presence dot shows online peers in the inbox and a `presence:update` broadcast reflects online/offline + `lastSeen`
 - [ ] Socket reconnects using the current access token; a rotated token swaps the socket without a full page reload
 
-### Step 11 — Reports & Moderation (backend integration)
+### Step 11 — Reports & Moderation (backend + frontend integration)
 
-Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `/api/v1/admin` (admin-only). The design is in `BACKEND-DESIGN.md` (Report model, lines 438–453; REPORTS endpoints, lines 707–711; ModerationKeyword model; ADMIN reports + keywords endpoints, lines 753–765). Frontend UI is pending.
+Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `/api/v1/admin` (admin-only). The design is in `BACKEND-DESIGN.md` (Report model, lines 438–453; REPORTS endpoints, lines 707–711; ModerationKeyword model; ADMIN reports + keywords endpoints, lines 753–765). Frontend UI is integrated.
 
 #### Backend modules (all new)
 
@@ -1174,11 +1174,22 @@ Backend (Step 11) is complete and mounted at `/api/v1/reports` (user-facing) + `
 - On a match, `autoModerate` sets `isFlagged: true` on the created doc (Post/Story/Reel already had `isFlagged`; Comment gained the field), so flagged content surfaces in the admin queue. Keyword list is cached (`moderation:keywords:v1`, 5min) and invalidated on keyword add/remove.
 - `matchType: 'exact'` matches whole words only (word-boundary regex); `'includes'` matches the keyword anywhere in the text (case-insensitive).
 
-### Acceptance Checklist (Step 11 UI — Reports & Moderation, pending)
+#### Frontend integration (done)
 
-- [ ] Report action on posts/users/comments/reels/stories opens a reason picker (`POST /reports`) and confirms with a toast; duplicate pending reports are rejected with the server message
-- [ ] `/reports/my` lists submitted reports with live status badges (pending → resolved/dismissed)
-- [ ] Admin dashboard `/admin` (role-gated) lists the report queue with status filter + queue stats
-- [ ] Admin can resolve (with an action note) or dismiss a report; the reporter gets a `report_resolved` notification
-- [ ] Admin keyword manager lists/adds/removes moderation keywords; adding a keyword immediately flags newly created posts/stories/reels/comments containing it
-- [ ] Flagged (`isFlagged`) content is visible in the admin queue for triage; blocked/muted suppression still applies server-side
+- **`src/api/reportApi.js`** — RTK Query: `useCreateReportMutation` (POST /reports), `useGetMyReportsQuery`, admin `useGetAdminReportsQuery` (+status filter), `useGetReportStatsQuery`, `useResolveReportMutation`, and keyword CRUD (`useGetModerationKeywordsQuery`, `useCreateKeywordMutation`, `useDeleteKeywordMutation`). Adds `'Reports', 'AdminReports', 'ReportStats', 'Keywords'` tags to `baseApi.tagTypes`.
+- **`src/components/report/ReportModal.jsx`** — reason picker modal (9 reasons with descriptions + optional details textarea, ≤1000 chars) using `useCreateReportMutation`; duplicate-pending + server errors surface via toast.
+- **`src/components/report/ReportButton.jsx`** — compact flag trigger opening `ReportModal` for a given `targetType`/`targetId`.
+- **Report actions wired in:** `PostCard` (non-own posts, header row), `PostDetail` (non-own, top action row), `CommentItem` (non-own, header row), `ProfileHeader` (non-own profiles, beside Message/Follow). Auto-moderated (flagged) posts still render — admins triage via the queue.
+- **`src/pages/MyReports.jsx`** (`/reports`, protected, nav "My Reports") — paginated list of my reports with live status badges (pending/reviewing/resolved/dismissed) and an "Action taken" note for resolved rows; empty state links to the feed.
+- **`src/pages/AdminReports.jsx`** (`/admin/reports`, role-gated to admin/superadmin) — stat cards (pending/reviewing/resolved/dismissed/total), status filter tabs, report cards with reporter avatar + target + description + **Resolve** (prompts for an action note) / **Dismiss** buttons on open reports.
+- **`src/pages/AdminKeywords.jsx`** (`/admin/keywords`, role-gated) — add keyword form (`includes`/`exact` matcher) + active keyword list with Remove; cache invalidates server-side so new keywords apply to the next content creation.
+- **Wiring** — routes in `App.jsx` under a protected block (`/reports`, `/admin/reports`, `/admin/keywords`); "My Reports" added to the Account nav group and a "Moderation" nav group (Moderation + Keywords) rendered only for admin/superadmin roles in `RootLayout`.
+
+### Acceptance Checklist (Step 11 UI — Reports & Moderation)
+
+- [x] Report action on posts/users/comments (and via same modal on reels/stories) opens a reason picker (`POST /reports`) and confirms with a toast; duplicate pending reports are rejected with the server message
+- [x] `/reports` lists submitted reports with live status badges (pending → resolved/dismissed) and action notes
+- [x] Admin `/admin/reports` (role-gated) lists the report queue with status filter + queue stats
+- [x] Admin can resolve (with an action note) or dismiss a report; the reporter gets a `report_resolved` notification
+- [x] Admin `/admin/keywords` lists/adds/removes moderation keywords; adding a keyword flags newly created posts/stories/reels/comments containing it
+- [x] Flagged (`isFlagged`) content is visible in the admin queue for triage; blocked/muted suppression still applies server-side

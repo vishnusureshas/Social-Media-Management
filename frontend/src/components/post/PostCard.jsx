@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { Avatar } from '../user/UserCard';
 import { formatRelative } from '../../utils/postUtils';
 import PostContent from './PostContent';
@@ -8,13 +9,17 @@ import SaveButton from './SaveButton';
 import ShareButton from './ShareButton';
 import ReactionBar from './ReactionBar';
 import PollCard from './PollCard';
+import ReportButton from '../report/ReportButton';
 
 const PostCard = ({ post }) => {
   const author = post?.author;
   const isRepost = !!post?.originalPost;
   const navigate = useNavigate();
+  const { user: me } = useAuth();
 
   if (!post) return null;
+
+  const isOwn = me && String(me._id) === String(author?._id);
 
   return (
     <article className="glass-strong overflow-hidden rounded-3xl animate-fade-up">
@@ -36,12 +41,15 @@ const PostCard = ({ post }) => {
             </div>
           </Link>
 
-          <Link
-            to={`/post/${post._id}`}
-            className="text-xs font-medium text-slate-400 transition-colors hover:text-brand-600"
-          >
-            {formatRelative(post.createdAt)}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/post/${post._id}`}
+              className="text-xs font-medium text-slate-400 transition-colors hover:text-brand-600"
+            >
+              {formatRelative(post.createdAt)}
+            </Link>
+            {!isOwn && <ReportButton targetType="post" targetId={post._id} />}
+          </div>
         </div>
 
         {isRepost && <ShareOriginal original={post.originalPost} />}

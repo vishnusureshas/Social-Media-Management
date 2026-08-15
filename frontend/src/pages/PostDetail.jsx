@@ -4,6 +4,7 @@ import { useGetPostQuery, useDeletePostMutation } from '../api/postApi';
 import { useAuth } from '../hooks/useAuth';
 import PostCard from '../components/post/PostCard';
 import CommentSection from '../components/post/CommentSection';
+import ReportButton from '../components/report/ReportButton';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 
@@ -70,6 +71,7 @@ const PostDetail = () => {
             Delete
           </Button>
         )}
+        {!isOwn && <ReportButton targetType="post" targetId={post._id} />}
       </div>
 
       <PostCard post={post} />

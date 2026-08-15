@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import FollowButton from './FollowButton';
 import Button from '../ui/Button';
+import ReportButton from '../report/ReportButton';
 import { useCreateConversationMutation } from '../../api/chatApi';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 
@@ -107,6 +108,7 @@ const ProfileHeader = ({ user, loading = false }) => {
                   Message
                 </Button>
                 <FollowButton username={user.username} isFollowing={user.isFollowing} size="sm" />
+                <ReportButton targetType="user" targetId={user._id} className="self-center" />
               </>
             )}
           </div>

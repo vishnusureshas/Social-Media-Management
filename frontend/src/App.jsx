@@ -30,6 +30,9 @@ import Notifications from './pages/Notifications';
 import PrivacySettings from './pages/PrivacySettings';
 import SecuritySettings from './pages/SecuritySettings';
 import Chat from './pages/Chat';
+import MyReports from './pages/MyReports';
+import AdminReports from './pages/AdminReports';
+import AdminKeywords from './pages/AdminKeywords';
 
 const App = () => (
   <>
@@ -101,6 +104,13 @@ const App = () => (
         {/* Chat (Step 10) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/chat" element={<Chat />} />
+        </Route>
+
+        {/* Reports & Moderation (Step 11) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/reports" element={<MyReports />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/keywords" element={<AdminKeywords />} />
         </Route>
 
         {/* Reels (Step 7) */}
