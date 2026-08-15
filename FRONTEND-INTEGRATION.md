@@ -1110,7 +1110,7 @@ Server → Client:
 - **`src/hooks/useChatUnread.js`** — sums `unread` across conversations (30s poll) for the `Messages` nav badge.
 - **`ProfileHeader`** — added a **Message** button (creates conversation, navigates to `/chat?conversation=...`).
 - **Wiring** — route in `App.jsx` under a protected block; nav link + `ChatUnreadBadge` in `RootLayout`; `messagesReducer` in `store/index.js`.
-- **Deploy note (prod)** — nginx must add `location /socket.io/ { proxy_pass http://backend:5000; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }` (currently only `/api/` is proxied).
+- **Deploy (prod)** — `frontend/nginx.conf` now proxies `/socket.io/` to `backend:5000` with WebSocket upgrade headers and extended timeouts; the socket uses same-origin `/` so no `VITE_SOCKET_URL` is needed in the Docker image.
 
 ### Acceptance Checklist (Step 10 UI — Chat module)
 
