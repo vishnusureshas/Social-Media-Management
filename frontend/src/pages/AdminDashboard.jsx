@@ -240,6 +240,23 @@ const AdminDashboard = () => {
         />
       </div>
 
+      {/* Quick actions */}
+      <div className="glass-strong flex flex-wrap items-center gap-2.5 rounded-3xl p-3.5">
+        <span className="mr-1 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Quick actions</span>
+        <Link to="/admin/users" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-violet-400/50 hover:text-white">
+          Moderate users
+        </Link>
+        <Link to="/admin/reports" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-amber-400/50 hover:text-white">
+          Review reports {reports > 0 && <span className="ml-1 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-amber-300">{fmt(reports)}</span>}
+        </Link>
+        <Link to="/admin/posts" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-fuchsia-400/50 hover:text-white">
+          Flagged content {flaggedPosts + flaggedReels > 0 && <span className="ml-1 rounded-full bg-rose-500/20 px-1.5 py-0.5 text-rose-300">{fmt(flaggedPosts + flaggedReels)}</span>}
+        </Link>
+        <Link to="/admin/broadcast" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-cyan-400/50 hover:text-white">
+          Broadcast
+        </Link>
+      </div>
+
       {/* Hero chart + engagement */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="glass-strong neon-frame--soft rounded-3xl p-5 lg:col-span-2">
@@ -270,23 +287,6 @@ const AdminDashboard = () => {
         {METRICS.map((m) => (
           <MetricCard key={m.key} metric={m} series={charts?.[m.key]} />
         ))}
-      </div>
-
-      {/* Quick links */}
-      <div className="glass-strong flex flex-wrap items-center gap-2.5 rounded-3xl p-4">
-        <span className="mr-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Quick actions</span>
-        <Link to="/admin/users" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-violet-400/50 hover:text-white">
-          Moderate users
-        </Link>
-        <Link to="/admin/reports" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-amber-400/50 hover:text-white">
-          Review reports {reports > 0 && <span className="ml-1 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-amber-300">{fmt(reports)}</span>}
-        </Link>
-        <Link to="/admin/posts" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-fuchsia-400/50 hover:text-white">
-          Flagged content {flaggedPosts + flaggedReels > 0 && <span className="ml-1 rounded-full bg-rose-500/20 px-1.5 py-0.5 text-rose-300">{fmt(flaggedPosts + flaggedReels)}</span>}
-        </Link>
-        <Link to="/admin/broadcast" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-bold text-slate-300 transition-colors hover:border-cyan-400/50 hover:text-white">
-          Broadcast
-        </Link>
       </div>
     </div>
   );
