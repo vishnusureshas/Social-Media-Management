@@ -5,7 +5,7 @@ import { getApiErrorMessage } from '../../utils/errorUtils';
 import cn from '../../utils/cn';
 
 const useUploader = (mutation, fieldLabel) => {
-  const [upload, { isLoading }] = mutation;
+  const [upload, { isLoading }] = mutation();
   const [preview, setPreview] = useState(null);
 
   const handleFile = async (file) => {
