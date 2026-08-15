@@ -56,16 +56,16 @@ const ReelCommentSheet = ({ reel, onClose }) => {
   return (
     <div className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/70 backdrop-blur-sm sm:p-4">
       <div
-        className="flex h-[75vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[70vh] sm:rounded-3xl"
+        className="flex h-[75vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/[0.12] bg-[#0b0f26] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.95)] sm:h-[70vh] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <p className="font-display text-lg font-bold text-slate-900">
-            Comments <span className="text-sm font-medium text-slate-400">({comments.length})</span>
+        <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4">
+          <p className="font-display text-lg font-bold text-white">
+            Comments <span className="text-sm font-medium text-slate-500">({comments.length})</span>
           </p>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 hover:bg-slate-200"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-sm font-bold text-slate-400 hover:bg-white/[0.12] hover:text-white"
           >
             ✕
           </button>
@@ -83,29 +83,29 @@ const ReelCommentSheet = ({ reel, onClose }) => {
           {hasMore && !isFetching && (
             <button
               onClick={() => setFeedCursor(data?.data?.pagination?.cursor)}
-              className="px-1 py-2 text-sm font-semibold text-brand-600 hover:text-brand-700"
+              className="px-1 py-2 text-sm font-semibold text-violet-400 hover:text-violet-300"
             >
               Load more comments
             </button>
           )}
-          {isFetching && <p className="px-1 py-2 text-sm text-slate-400">Loading comments…</p>}
+          {isFetching && <p className="px-1 py-2 text-sm text-slate-500">Loading comments…</p>}
           {!isFetching && comments.length === 0 && (
-            <p className="py-8 text-center text-sm text-slate-400">
+            <p className="py-8 text-center text-sm text-slate-500">
               No comments yet. Be the first to comment!
             </p>
           )}
         </div>
 
-        <div className="border-t border-slate-100 p-4">
+        <div className="border-t border-white/[0.08] p-4">
           {replyTo && (
-            <div className="mb-2 flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700">
+            <div className="mb-2 flex items-center justify-between rounded-xl bg-violet-500/10 px-3 py-2 text-xs font-medium text-violet-300">
               <span>
                 Replying to <b>@{replyTo.author?.username}</b>
               </span>
               <button
                 type="button"
                 onClick={() => setReplyTo(null)}
-                className="font-bold text-slate-400 hover:text-rose-500"
+                className="font-bold text-slate-500 hover:text-rose-400"
               >
                 ✕
               </button>

@@ -24,7 +24,7 @@ const ShareButton = ({ post, onShared }) => {
     <button
       onClick={handleShare}
       disabled={isLoading}
-      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
+      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
         <path

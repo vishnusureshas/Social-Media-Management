@@ -8,8 +8,8 @@ const SuggestionsPanel = ({ limit = 3, title = 'Who to follow' }) => {
 
   return (
     <div className="glass-strong rounded-3xl p-5 animate-fade-up">
-      <h2 className="font-display text-lg font-bold text-slate-900">{title}</h2>
-      <p className="mt-1 text-xs text-slate-400">Follow creators you might like</p>
+      <h2 className="font-display text-lg font-bold text-slate-100">{title}</h2>
+      <p className="mt-1 text-xs text-slate-500">Follow creators you might like</p>
 
       {isLoading ? (
         <div className="flex justify-center py-8">

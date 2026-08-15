@@ -614,3 +614,288 @@
 .auth .text-brand-700 {
   color: #c4b5fd;
 }
+
+/* ============================================================
+   Vibely — futuristic dashboard theme (scoped to .dashboard)
+   Re-skins the authenticated app without touching logic:
+   remaps the light utility tokens the shared UI components
+   use into a dark neon + glassmorphism palette.
+   ============================================================ */
+
+.dashboard {
+  --d-ink: #eef1ff;
+  --d-muted: #9aa3c8;
+  --d-faint: #6a739a;
+  --d-line: rgba(255, 255, 255, 0.09);
+  --d-line-strong: rgba(255, 255, 255, 0.16);
+  --d-glass: rgba(255, 255, 255, 0.045);
+  --d-card: #0a0e24;
+
+  --d-violet: #8b5cf6;
+  --d-fuchsia: #d946ef;
+  --d-pink: #ec4899;
+  --d-cyan: #22d3ee;
+  --d-blue: #60a5fa;
+
+  --d-grad: linear-gradient(120deg, #8b5cf6, #d946ef 40%, #ec4899 70%, #22d3ee 115%);
+  --d-grad-text: linear-gradient(100deg, #c4b5fd 0%, #f0abfc 42%, #f9a8d4 68%, #a5f3fc 100%);
+  --d-glow: 0 0 42px rgba(168, 85, 247, 0.4);
+
+  position: relative;
+  min-height: 100vh;
+  color: var(--d-ink);
+  background:
+    radial-gradient(52% 38% at 8% -6%, rgba(139, 92, 246, 0.22), transparent 64%),
+    radial-gradient(42% 34% at 98% 0%, rgba(34, 211, 238, 0.12), transparent 60%),
+    radial-gradient(50% 40% at 50% 112%, rgba(236, 72, 153, 0.14), transparent 66%),
+    linear-gradient(180deg, #05060f 0%, #080c20 50%, #05060f 100%);
+}
+
+/* subtle particle field overlaying the dashboard */
+.dashboard .dash-canvas::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 24% 68%, rgba(167, 139, 250, 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 36% 34%, rgba(255, 255, 255, 0.28), transparent 60%),
+    radial-gradient(1.5px 1.5px at 49% 80%, rgba(103, 232, 249, 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 61% 16%, rgba(255, 255, 255, 0.34), transparent 60%),
+    radial-gradient(1.5px 1.5px at 74% 48%, rgba(240, 171, 252, 0.42), transparent 60%),
+    radial-gradient(1.5px 1.5px at 86% 26%, rgba(255, 255, 255, 0.3), transparent 60%),
+    radial-gradient(1.5px 1.5px at 93% 64%, rgba(165, 243, 252, 0.38), transparent 60%),
+    radial-gradient(1.5px 1.5px at 18% 90%, rgba(167, 139, 250, 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 78% 88%, rgba(244, 114, 182, 0.35), transparent 60%),
+    radial-gradient(1.5px 1.5px at 44% 52%, rgba(255, 255, 255, 0.2), transparent 60%),
+    radial-gradient(1.5px 1.5px at 66% 74%, rgba(255, 255, 255, 0.2), transparent 60%);
+  animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+/* ---- dashboard glass surfaces ---- */
+
+.dashboard .glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--d-line);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.dashboard .glass-strong {
+  background: linear-gradient(180deg, rgba(13, 18, 43, 0.86), rgba(9, 12, 30, 0.78));
+  border: 1px solid var(--d-line);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 26px 80px -30px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dashboard .shadow-soft,
+.dashboard .shadow-soft-lg,
+.dashboard .shadow-2xl,
+.dashboard .shadow-xl {
+  box-shadow: 0 26px 80px -30px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ---- dashboard text remaps (keeps shared components readable) ---- */
+
+.dashboard .text-slate-900 { color: #f2f4ff; }
+.dashboard .text-slate-800 { color: #e7eaff; }
+.dashboard .text-slate-700 { color: #d0d5f2; }
+.dashboard .text-slate-600 { color: #adb4d8; }
+.dashboard .text-slate-500 { color: #8c94ba; }
+.dashboard .text-slate-400 { color: #6f789e; }
+.dashboard .text-slate-300 { color: #565f84; }
+.dashboard .text-slate-200 { color: #495274; }
+.dashboard .text-slate-100 { color: #3a4366; }
+
+.dashboard .text-brand-400 { color: #a5b4fc; }
+.dashboard .text-brand-500 { color: #a78bfa; }
+.dashboard .text-brand-600 { color: #c4b5fd; }
+.dashboard .text-brand-700 { color: #ddd6fe; }
+
+.dashboard .placeholder\:text-slate-300::placeholder { color: #4a5378; }
+.dashboard .placeholder\:text-slate-400::placeholder { color: #565f84; }
+
+/* ---- dashboard border remaps ---- */
+
+.dashboard .border-slate-100 { border-color: rgba(255, 255, 255, 0.07); }
+.dashboard .border-slate-200 { border-color: rgba(255, 255, 255, 0.11); }
+.dashboard .border-slate-300 { border-color: rgba(255, 255, 255, 0.17); }
+.dashboard .border-slate-200\/70 { border-color: rgba(255, 255, 255, 0.08); }
+.dashboard .border-white\/60 { border-color: rgba(255, 255, 255, 0.12); }
+.dashboard .border-white\/70 { border-color: rgba(255, 255, 255, 0.14); }
+.dashboard .border-white\/\[0\.07\] { border-color: rgba(255, 255, 255, 0.07); }
+.dashboard .ring-slate-200 { --tw-ring-color: rgba(255, 255, 255, 0.14); }
+.dashboard .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08); }
+
+/* ---- dashboard surface remaps ---- */
+
+.dashboard .bg-white { background-color: rgba(255, 255, 255, 0.06); }
+.dashboard .bg-white\/30 { background-color: rgba(255, 255, 255, 0.03); }
+.dashboard .bg-white\/40 { background-color: rgba(255, 255, 255, 0.04); }
+.dashboard .bg-white\/50 { background-color: rgba(255, 255, 255, 0.05); }
+.dashboard .bg-white\/60 { background-color: rgba(255, 255, 255, 0.055); }
+.dashboard .bg-white\/70 { background-color: rgba(255, 255, 255, 0.06); }
+.dashboard .bg-white\/80 { background-color: rgba(255, 255, 255, 0.07); }
+.dashboard .bg-white\/85 { background-color: rgba(255, 255, 255, 0.08); }
+.dashboard .bg-white\/\[0\.03\] { background-color: rgba(255, 255, 255, 0.03); }
+.dashboard .bg-white\/\[0\.04\] { background-color: rgba(255, 255, 255, 0.04); }
+.dashboard .bg-slate-50 { background-color: rgba(255, 255, 255, 0.035); }
+.dashboard .bg-slate-50\/50 { background-color: rgba(11, 16, 36, 0.5); }
+.dashboard .bg-slate-100 { background-color: rgba(255, 255, 255, 0.05); }
+.dashboard .bg-slate-200 { background-color: rgba(255, 255, 255, 0.09); }
+.dashboard .bg-slate-300 { background-color: rgba(255, 255, 255, 0.14); }
+
+.dashboard .bg-brand-50 { background-color: rgba(139, 92, 246, 0.14); }
+.dashboard .bg-brand-50\/50 { background-color: rgba(139, 92, 246, 0.1); }
+.dashboard .bg-brand-100 { background-color: rgba(139, 92, 246, 0.22); }
+.dashboard .bg-brand-200 { background-color: rgba(139, 92, 246, 0.28); }
+.dashboard .bg-rose-50 { background-color: rgba(244, 63, 94, 0.12); }
+.dashboard .bg-rose-100 { background-color: rgba(244, 63, 94, 0.2); }
+.dashboard .bg-amber-50 { background-color: rgba(245, 158, 11, 0.12); }
+.dashboard .bg-amber-100 { background-color: rgba(245, 158, 11, 0.2); }
+.dashboard .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12); }
+.dashboard .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.2); }
+.dashboard .bg-fuchsia-100 { background-color: rgba(217, 70, 239, 0.2); }
+.dashboard .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
+
+/* hover variants used by shared components */
+.dashboard .hover\:bg-white:hover { background-color: rgba(255, 255, 255, 0.09); }
+.dashboard .hover\:bg-white\/5:hover { background-color: rgba(255, 255, 255, 0.07); }
+.dashboard .hover\:bg-slate-50:hover { background-color: rgba(255, 255, 255, 0.07); }
+.dashboard .hover\:bg-slate-100:hover { background-color: rgba(255, 255, 255, 0.08); }
+.dashboard .hover\:bg-slate-200:hover { background-color: rgba(255, 255, 255, 0.12); }
+.dashboard .hover\:bg-slate-300:hover { background-color: rgba(255, 255, 255, 0.18); }
+.dashboard .hover\:bg-brand-50:hover { background-color: rgba(139, 92, 246, 0.16); }
+.dashboard .hover\:bg-rose-50:hover { background-color: rgba(244, 63, 94, 0.14); }
+.dashboard .hover\:bg-amber-50:hover { background-color: rgba(245, 158, 11, 0.14); }
+.dashboard .hover\:bg-emerald-50:hover { background-color: rgba(16, 185, 129, 0.14); }
+
+.dashboard .hover\:border-brand-300:hover { border-color: rgba(167, 139, 250, 0.5); }
+.dashboard .hover\:border-rose-300:hover { border-color: rgba(251, 113, 133, 0.5); }
+
+/* ---- dashboard inputs ---- */
+
+.dashboard .input-base {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  box-shadow: none;
+}
+.dashboard .input-base::placeholder { color: #565f84; }
+.dashboard .input-base:hover { border-color: rgba(255, 255, 255, 0.2); }
+.dashboard .input-base:focus {
+  border-color: var(--d-violet);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.16), 0 0 28px rgba(139, 92, 246, 0.22);
+}
+
+/* ---- dashboard brand chips / previews ---- */
+
+.dashboard .text-gradient { color: var(--d-grad-text); background: none; -webkit-text-fill-color: transparent; }
+
+/* alternate "cyber blue" accent scheme toggled from the top bar */
+.dashboard[data-theme='neon'] {
+  --d-violet: #06b6d4;
+  --d-fuchsia: #3b82f6;
+  --d-pink: #a855f7;
+  --d-cyan: #2dd4bf;
+  --d-blue: #818cf8;
+  --d-grad: linear-gradient(120deg, #22d3ee, #60a5fa 40%, #a78bfa 70%, #2dd4bf 115%);
+  --d-grad-text: linear-gradient(100deg, #67e8f9 0%, #93c5fd 45%, #c4b5fd 70%, #5eead4 100%);
+}
+.dashboard[data-theme='neon'] .dash-nav-active {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.22), rgba(96, 165, 250, 0.14));
+  border-color: rgba(103, 232, 249, 0.35);
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* gradient-border utility for featured panels */
+.dashboard .neon-frame {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(11, 16, 36, 0.92), rgba(9, 12, 30, 0.85)) padding-box,
+    var(--d-grad) border-box;
+  box-shadow: 0 24px 70px -26px rgba(139, 92, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dashboard .neon-frame--soft {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(11, 16, 36, 0.85), rgba(9, 12, 30, 0.8)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05)) border-box;
+}
+
+/* glowing round text chips inside dashboard cards */
+.dashboard .dash-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--d-muted);
+}
+
+/* story ring gradient */
+.dashboard .story-ring {
+  background: conic-gradient(from 210deg, #a78bfa, #e879f9, #fb7185, #60a5fa, #22d3ee, #a78bfa);
+  box-shadow: 0 0 22px rgba(168, 85, 247, 0.45);
+}
+
+/* mini trending sparkline bars */
+.dashboard .trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 22px;
+}
+.dashboard .trend-bars i {
+  display: block;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #a78bfa, #ec4899);
+  opacity: 0.85;
+}
+
+/* scrollbar taming for horizontal strips */
+.dashboard .scrollbar-thin::-webkit-scrollbar { height: 6px; }
+.dashboard .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 999px; }
+.dashboard .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+/* subtle hover elevation for dashboards cards */
+.dashboard .dash-hover {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+.dashboard .dash-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 80px -26px rgba(139, 92, 246, 0.5);
+}
+
+/* active nav glow pill */
+.dashboard .dash-nav-active {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.22), rgba(236, 72, 153, 0.14));
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  box-shadow: 0 0 26px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* skeleton pulses */
+.dashboard .animate-pulse { opacity: 0.6; }
+
+/* ensure modals/sheets still readable on dark */
+.dashboard .bg-slate-950\/70,
+.dashboard .bg-slate-950\/80 { background-color: rgba(2, 4, 12, 0.82); }
+.dashboard .text-rose-500 { color: #fb7185; }
+.dashboard .text-rose-600 { color: #fda4af; }
+.dashboard .text-amber-600 { color: #fbbf24; }
+.dashboard .text-emerald-600 { color: #34d399; }
+.dashboard .text-fuchsia-600 { color: #f0abfc; }

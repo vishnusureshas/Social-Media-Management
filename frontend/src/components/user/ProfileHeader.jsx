@@ -42,7 +42,7 @@ const ProfileHeader = ({ user, loading = false }) => {
           <div className="h-full w-full" />
         )}
         <div className="absolute -bottom-14 left-8">
-          <span className="flex h-32 w-32 items-center justify-center rounded-3xl border-4 border-white bg-gradient-to-br from-brand-500 to-fuchsia-500 text-5xl font-bold text-white shadow-glow">
+          <span className="flex h-32 w-32 items-center justify-center rounded-3xl border-4 border-[#0a0e24] bg-gradient-to-br from-brand-500 to-fuchsia-500 text-5xl font-bold text-white shadow-glow">
             {user.avatar ? (
               <img src={user.avatar} alt="Avatar" className="h-full w-full rounded-3xl object-cover" />
             ) : (
@@ -51,7 +51,7 @@ const ProfileHeader = ({ user, loading = false }) => {
           </span>
         </div>
         {user.verified && (
-          <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-brand-600 backdrop-blur">
+          <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-[#0b0f26]/80 px-3 py-1 text-xs font-bold text-violet-300 backdrop-blur ring-1 ring-white/10">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l2.4 2.4 3.4-.4.4 3.4L20 10l-1.8 2.6.1 3.4-3.4.4L12 20l-2.9-1.6-3.4-.4.1-3.4L4 10l1.8-2.6.4-3.4 3.4.4L12 2z" />
             </svg>

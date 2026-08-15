@@ -63,8 +63,8 @@ const FollowButton = ({ username, isFollowing, size = 'sm', className = '' }) =>
           disabled={isLoading}
           onClick={() => setConfirmOpen((v) => !v)}
           className={
-            'group inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition-all duration-200 select-none ' +
-            'hover:border-rose-300 hover:bg-rose-50 hover:text-rose-500 ' +
+            'group inline-flex items-center justify-center gap-2 rounded-2xl border border-white/[0.14] bg-white/[0.05] px-6 py-3 text-sm font-semibold text-slate-200 transition-all duration-200 select-none ' +
+            'hover:border-rose-400/50 hover:bg-rose-500/10 hover:text-rose-300 ' +
             (size === 'sm' ? '!px-4 !py-2 text-sm' : '') +
             (className ? ` ${className}` : '')
           }
@@ -92,8 +92,8 @@ const FollowButton = ({ username, isFollowing, size = 'sm', className = '' }) =>
               }}
             />
             <div className="glass-strong absolute right-0 top-full z-50 mt-2 w-72 rounded-3xl p-5 shadow-2xl animate-fade-up">
-              <p className="font-display text-sm font-bold text-slate-900">Unfollow @{username}?</p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="font-display text-sm font-bold text-slate-100">Unfollow @{username}?</p>
+              <p className="mt-1 text-sm text-slate-400">
                 Their posts will no longer appear in your feed.
               </p>
               <div className="mt-4 flex gap-2">

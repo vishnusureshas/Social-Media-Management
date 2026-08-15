@@ -38,7 +38,7 @@ const CommentReaction = ({ comment, postId }) => {
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'inline-flex items-center gap-1 text-xs font-semibold transition-colors',
-          myEmoji ? 'text-brand-600' : 'text-slate-400 hover:text-brand-600'
+          myEmoji ? 'text-violet-400' : 'text-slate-500 hover:text-violet-400'
         )}
       >
         {myEmoji ? EMOJI_ICON[myEmoji] : '🙂'}
@@ -46,7 +46,7 @@ const CommentReaction = ({ comment, postId }) => {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 z-20 mb-2 flex items-center gap-1 rounded-2xl border border-slate-100 bg-white px-2 py-2 shadow-xl animate-fade-up">
+        <div className="absolute bottom-full left-0 z-20 mb-2 flex items-center gap-1 rounded-2xl border border-white/[0.12] bg-[#0b0f26] px-2 py-2 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] animate-fade-up">
           {EMOJIS.map(({ emoji, icon }) => (
             <button
               key={emoji}

@@ -48,17 +48,17 @@ const ReportModal = ({ open, onClose, targetType, targetId }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-scale-in"
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.12] bg-[#0b0f26] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.95)] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
           <div>
-            <h3 className="font-display text-lg font-bold text-slate-900">Report content</h3>
-            <p className="text-xs text-slate-400">Help keep Nexus safe. Reports are reviewed by our team.</p>
+            <h3 className="font-display text-lg font-bold text-white">Report content</h3>
+            <p className="text-xs text-slate-500">Help keep Vibely safe. Reports are reviewed by our team.</p>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 hover:bg-slate-200"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-sm font-bold text-slate-400 hover:bg-white/[0.12] hover:text-white"
           >
             ✕
           </button>
@@ -66,7 +66,7 @@ const ReportModal = ({ open, onClose, targetType, targetId }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="max-h-[50vh] overflow-y-auto px-6 py-4">
-            <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">Why are you reporting this?</p>
+            <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Why are you reporting this?</p>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {REASONS.map((r) => (
                 <button
@@ -75,19 +75,19 @@ const ReportModal = ({ open, onClose, targetType, targetId }) => {
                   onClick={() => setReason(r.value)}
                   className={`rounded-2xl border p-3 text-left transition-all duration-200 ${
                     reason === r.value
-                      ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-200'
-                      : 'border-slate-200 bg-white hover:border-brand-300'
+                      ? 'border-violet-400/60 bg-violet-500/15 ring-2 ring-violet-400/30'
+                      : 'border-white/[0.12] bg-white/[0.04] hover:border-violet-400/40'
                   }`}
                 >
-                  <span className="block text-sm font-bold text-slate-800">{r.label}</span>
-                  <span className="mt-0.5 block text-xs leading-snug text-slate-400">{r.desc}</span>
+                  <span className="block text-sm font-bold text-slate-100">{r.label}</span>
+                  <span className="mt-0.5 block text-xs leading-snug text-slate-500">{r.desc}</span>
                 </button>
               ))}
             </div>
 
             <label className="mt-5 block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-400">
-                Add details <span className="font-normal normal-case text-slate-300">(optional)</span>
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                Add details <span className="font-normal normal-case text-slate-600">(optional)</span>
               </span>
               <textarea
                 value={description}
@@ -95,12 +95,12 @@ const ReportModal = ({ open, onClose, targetType, targetId }) => {
                 maxLength={1000}
                 rows={3}
                 placeholder="Tell us more about the issue…"
-                className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className="w-full resize-none rounded-2xl border border-white/[0.12] bg-white/[0.05] px-4 py-3 text-sm text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
               />
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
+          <div className="flex justify-end gap-3 border-t border-white/[0.08] px-6 py-4">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
               Cancel
             </Button>

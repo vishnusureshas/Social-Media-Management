@@ -57,7 +57,7 @@ const Account = () => {
                 <div className="h-full w-full" />
               )}
               <div className="absolute -bottom-12 left-8">
-                <div className="flex h-28 w-28 items-center justify-center rounded-3xl border-4 border-white bg-gradient-to-br from-brand-500 to-fuchsia-500 text-4xl font-bold text-white shadow-glow">
+                <div className="flex h-28 w-28 items-center justify-center rounded-3xl border-4 border-[#0a0e24] bg-gradient-to-br from-brand-500 to-fuchsia-500 text-4xl font-bold text-white shadow-glow">
                   {profile.avatar ? <img src={profile.avatar} alt="Avatar" className="h-full w-full rounded-3xl object-cover" /> : initial(profile.username)}
                 </div>
               </div>

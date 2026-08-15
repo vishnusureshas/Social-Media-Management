@@ -7,7 +7,7 @@ const Avatar = ({ user, size = 'md' }) => {
   const initial = (user?.username || 'U')[0].toUpperCase();
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-fuchsia-500 font-bold text-white shadow-glow ${sizes[size]}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 via-violet-500 to-fuchsia-500 font-bold text-white shadow-glow ${sizes[size]}`}
     >
       {user?.avatar ? (
         <img src={user.avatar} alt={user.username} className="h-full w-full rounded-2xl object-cover" />
@@ -24,27 +24,27 @@ const UserCard = ({ user, size = 'md', showBio = true, className = '' }) => {
 
   return (
     <div
-      className={`glass flex items-center gap-4 rounded-3xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-300 ${className}`}
+      className={`glass dash-hover flex items-center gap-4 rounded-3xl p-4 ${className}`}
     >
       <Link to={`/u/${user.username}`}>
         <Avatar user={user} size={size} />
       </Link>
       <div className="min-w-0 flex-1">
         <Link to={`/u/${user.username}`} className="group block">
-          <p className="flex items-center gap-1.5 truncate font-display font-bold text-slate-900 group-hover:text-brand-600">
+          <p className="flex items-center gap-1.5 truncate font-display font-bold text-slate-100 group-hover:text-violet-200">
             {user.fullName || user.username}
             {user.verified && (
-              <svg className="h-4 w-4 shrink-0 text-brand-500" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="h-4 w-4 shrink-0 text-violet-400" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2l2.4 2.4 3.4-.4.4 3.4L20 10l-1.8 2.6.1 3.4-3.4.4L12 20l-2.9-1.6-3.4-.4.1-3.4L4 10l1.8-2.6.4-3.4 3.4.4L12 2z" />
               </svg>
             )}
           </p>
           <p className="truncate text-sm font-medium text-slate-500">@{user.username}</p>
           {showBio && user.bio && (
-            <p className="mt-1 truncate text-sm text-slate-600">{user.bio}</p>
+            <p className="mt-1 truncate text-sm text-slate-400">{user.bio}</p>
           )}
           {(user.counts?.followers !== undefined || user.counts?.following !== undefined) && (
-            <p className="mt-1 text-xs font-medium text-slate-400">
+            <p className="mt-1 text-xs font-medium text-slate-500">
               {user.counts?.followers ?? 0} followers · {user.counts?.following ?? 0} following
             </p>
           )}

@@ -61,28 +61,28 @@ const ReelShareSheet = ({ reel, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="flex h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[75vh] sm:rounded-3xl"
+        className="flex h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/[0.12] bg-[#0b0f26] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.95)] sm:h-[75vh] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-slate-100 px-5 py-4">
+        <div className="border-b border-white/[0.08] px-5 py-4">
           <div className="flex items-center justify-between">
-            <p className="font-display text-lg font-bold text-slate-900">Send reel to</p>
+            <p className="font-display text-lg font-bold text-white">Send reel to</p>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 hover:bg-slate-200"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-sm font-bold text-slate-400 hover:bg-white/[0.12] hover:text-white"
             >
               ✕
             </button>
           </div>
-          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2">
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 shrink-0 text-slate-400">
+          <div className="mt-3 flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.05] px-3 py-2">
+            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 shrink-0 text-slate-500">
               <path d="M21 21l-4.3-4.3M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search contacts…"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+              className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-600"
             />
           </div>
         </div>
@@ -93,7 +93,7 @@ const ReelShareSheet = ({ reel, onClose }) => {
               <Spinner />
             </div>
           ) : filtered.length === 0 ? (
-            <p className="py-16 text-center text-sm text-slate-400">
+            <p className="py-16 text-center text-sm text-slate-500">
               {query ? 'No contacts match your search.' : 'Follow people to send them reels.'}
             </p>
           ) : (
@@ -104,19 +104,19 @@ const ReelShareSheet = ({ reel, onClose }) => {
                   <button
                     key={c._id}
                     onClick={() => toggle(c._id)}
-                    className="flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors hover:bg-white/[0.05]"
                   >
                     <Avatar user={c} size="sm" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-slate-900">
+                      <span className="block truncate text-sm font-bold text-slate-100">
                         {c.fullName || c.username}
                       </span>
                       <span className="block truncate text-xs text-slate-500">@{c.username}</span>
                     </span>
                     <span
                       className={cn(
-                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold text-white transition-all',
-                        isChecked ? 'border-brand-500 bg-brand-500' : 'border-slate-300 bg-white'
+                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold transition-all',
+                        isChecked ? 'border-violet-400 bg-violet-500' : 'border-slate-600 bg-white/[0.04]'
                       )}
                     >
                       {isChecked ? '✓' : ''}
@@ -125,13 +125,13 @@ const ReelShareSheet = ({ reel, onClose }) => {
                 );
               })}
               {isFetching && (
-                <p className="px-2 py-2 text-center text-xs text-slate-400">Loading more…</p>
+                <p className="px-2 py-2 text-center text-xs text-slate-500">Loading more…</p>
               )}
             </div>
           )}
         </div>
 
-        <div className="border-t border-slate-100 p-4">
+        <div className="border-t border-white/[0.08] p-4">
           <Button
             onClick={submit}
             loading={isLoading}

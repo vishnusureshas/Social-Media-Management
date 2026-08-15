@@ -57,11 +57,11 @@ const ReactionBar = ({ post, targetType = 'post', postId }) => {
     <div className="relative">
       <button
         onClick={() => setActive((a) => !a)}
-        className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-brand-50 hover:text-brand-600"
+        className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-white/[0.07] hover:text-violet-300"
       >
         {total > 0 ? (
           <>
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-xs">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400/20 text-xs">
               {EMOJI_ICON[reactions.myReaction] || '👍'}
             </span>
             {total}
@@ -75,14 +75,14 @@ const ReactionBar = ({ post, targetType = 'post', postId }) => {
       </button>
 
       {active && (
-        <div className="absolute bottom-full left-0 z-20 mb-2 flex items-center gap-1 rounded-2xl border border-slate-100 bg-white px-2 py-2 shadow-xl animate-fade-up">
+        <div className="absolute bottom-full left-0 z-20 mb-2 flex items-center gap-1 rounded-2xl border border-white/[0.12] bg-[#0b0f26]/95 px-2 py-2 shadow-[0_30px_90px_-24px_rgba(0,0,0,0.9)] backdrop-blur-2xl animate-fade-up">
           {EMOJIS.map(({ emoji, icon }) => (
             <button
               key={emoji}
               onClick={() => handleEmoji(emoji)}
               className={cn(
                 'flex h-10 w-10 items-center justify-center rounded-xl text-2xl transition-transform hover:scale-125',
-                reactions.myReaction === emoji && 'bg-brand-50'
+                reactions.myReaction === emoji && 'bg-violet-500/20'
               )}
             >
               {icon}

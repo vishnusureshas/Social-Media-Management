@@ -24,7 +24,7 @@ const SaveButton = ({ post }) => {
     <button
       onClick={handleClick}
       disabled={isLoading}
-      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-amber-50 hover:text-amber-500"
+      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-amber-500/10 hover:text-amber-400"
     >
       <svg
         viewBox="0 0 24 24"

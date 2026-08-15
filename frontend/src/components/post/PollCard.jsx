@@ -44,8 +44,8 @@ const PollCard = ({ poll, postId }) => {
     isExpired && pollState.expiresAt ? 'Ended' : pollState.expiresAt ? `Ends ${formatTimeAgo(pollState.expiresAt)}` : null;
 
   return (
-    <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-      <p className="font-display text-sm font-bold text-slate-900">{pollState.question}</p>
+    <div className="mt-3 rounded-2xl border border-white/[0.09] bg-white/[0.03] p-4">
+      <p className="font-display text-sm font-bold text-slate-100">{pollState.question}</p>
 
       <div className="mt-3 space-y-2">
         {options.map((option) => {
@@ -59,19 +59,19 @@ const PollCard = ({ poll, postId }) => {
               className={cn(
                 'relative block w-full overflow-hidden rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors',
                 showResults
-                  ? cn(isSelected ? 'border-brand-500 bg-brand-50' : 'border-slate-100 bg-white')
-                  : 'border-slate-200 bg-white hover:border-brand-400'
+                  ? cn(isSelected ? 'border-violet-400/60 bg-violet-500/15' : 'border-white/[0.1] bg-white/[0.04]')
+                  : 'border-white/[0.14] bg-white/[0.04] hover:border-violet-400/50'
               )}
             >
               {showResults && (
                 <span
-                  className="absolute inset-y-0 left-0 bg-brand-100"
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-500/40 to-fuchsia-500/30"
                   style={{ width: `${pct}%` }}
                 />
               )}
               <span className="relative flex items-center justify-between gap-2">
-                <span className="truncate text-slate-800">{option.text}</span>
-                <span className="shrink-0 text-xs font-semibold text-slate-500">
+                <span className="truncate text-slate-200">{option.text}</span>
+                <span className="shrink-0 text-xs font-semibold text-slate-400">
                   {showResults ? `${pct}%` : ''}
                 </span>
               </span>
@@ -80,7 +80,7 @@ const PollCard = ({ poll, postId }) => {
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs font-medium text-slate-400">
+      <div className="mt-3 flex items-center justify-between text-xs font-medium text-slate-500">
         <span>{totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}</span>
         {timeLabel && <span>{timeLabel}</span>}
       </div>

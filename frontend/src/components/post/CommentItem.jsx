@@ -20,20 +20,20 @@ const CommentItem = ({ comment, onReply }) => {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <Link to={`/u/${author?.username}`} className="group inline-flex items-center gap-1">
-            <span className="text-sm font-bold text-slate-900 group-hover:text-brand-600">
+            <span className="text-sm font-bold text-slate-100 group-hover:text-violet-200">
               {author?.fullName || author?.username}
             </span>
-            <span className="text-xs font-medium text-slate-400">@{author?.username}</span>
+            <span className="text-xs font-medium text-slate-500">@{author?.username}</span>
           </Link>
-          <span className="text-xs font-medium text-slate-300">· {formatRelative(comment.createdAt)}</span>
+          <span className="text-xs font-medium text-slate-500">· {formatRelative(comment.createdAt)}</span>
           <span className="flex-1" />
           {!isOwn && <ReportButton targetType="comment" targetId={comment._id} />}
         </div>
-        <p className="mt-1 text-sm leading-relaxed text-slate-700">{comment.content}</p>
+        <p className="mt-1 text-sm leading-relaxed text-slate-200">{comment.content}</p>
         {onReply && (
           <button
             onClick={() => onReply(comment)}
-            className="mt-1 text-xs font-semibold text-slate-400 transition-colors hover:text-brand-600"
+            className="mt-1 text-xs font-semibold text-slate-500 transition-colors hover:text-violet-300"
           >
             Reply
           </button>

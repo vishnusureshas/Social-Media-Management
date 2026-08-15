@@ -29,8 +29,7 @@ const AuthLayout = ({
       <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 pb-12 pt-28 sm:px-8 lg:flex-row lg:items-center lg:gap-16 lg:pt-24">
         {/* ---- Mobile / tablet brand header ---- */}
         <div className="mb-8 flex flex-col items-center text-center lg:hidden">
-          <LandingLogo />
-          <h1 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
             {title}
           </h1>
           {subtitle && <p className="mt-2 max-w-sm text-sm text-slate-400">{subtitle}</p>}

@@ -9,7 +9,7 @@ const ReportButton = ({ targetType, targetId, className = '' }) => {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition-colors hover:text-rose-500 ${className}`}
+        className={`inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-rose-400 ${className}`}
         title="Report"
         aria-label="Report this content"
       >

@@ -47,12 +47,12 @@ const StoryComposer = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
+      <div className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.12] bg-[#0b0f26] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.95)]">
         <div className="flex items-center justify-between px-5 py-4">
-          <p className="font-display text-lg font-bold text-slate-900">Add to your story</p>
+          <p className="font-display text-lg font-bold text-white">Add to your story</p>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 hover:bg-slate-200"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-sm font-bold text-slate-400 hover:bg-white/[0.12] hover:text-white"
           >
             ✕
           </button>
@@ -105,7 +105,7 @@ const StoryComposer = ({ onClose }) => {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="mb-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50"
+                className="mb-3 w-full rounded-xl border border-white/[0.12] bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-violet-300 transition-colors hover:bg-white/[0.09] hover:text-violet-200"
               >
                 📷 Add photo / video
               </button>

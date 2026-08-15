@@ -29,7 +29,7 @@ const LikeButton = ({ post }) => {
       disabled={isLoading}
       className={cn(
         base,
-        liked ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-500 hover:bg-rose-50 hover:text-rose-500'
+        liked ? 'text-rose-400 hover:bg-rose-500/10' : 'text-slate-400 hover:bg-rose-500/10 hover:text-rose-400'
       )}
     >
       <svg viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} className="h-5 w-5">

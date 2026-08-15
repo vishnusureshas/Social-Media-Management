@@ -3,10 +3,10 @@ import cn from '../../utils/cn';
 const variants = {
   primary: 'btn-gradient',
   secondary:
-    'bg-white/80 border border-slate-200 text-slate-700 hover:bg-white hover:border-brand-300 hover:text-brand-600 transition-all duration-300 shadow-sm',
-  ghost: 'text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors duration-300',
+    'border border-white/[0.14] bg-white/[0.06] text-slate-100 hover:bg-white/[0.1] hover:border-violet-400/40 hover:text-white transition-all duration-300',
+  ghost: 'text-slate-400 hover:text-violet-200 hover:bg-white/[0.06] transition-colors duration-300',
   outline:
-    'border border-brand-500 text-brand-600 hover:bg-brand-500 hover:text-white transition-all duration-300',
+    'border border-violet-400/60 text-violet-300 hover:bg-violet-500/80 hover:text-white transition-all duration-300',
   danger:
     'bg-rose-500 text-white hover:bg-rose-600 transition-all duration-300 active:scale-95',
   neon: 'btn-neon',

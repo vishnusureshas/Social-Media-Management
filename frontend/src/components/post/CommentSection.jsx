@@ -58,20 +58,20 @@ const CommentSection = ({ postId }) => {
 
   return (
     <div className="mt-6">
-      <h3 className="font-display text-lg font-bold text-slate-900">Comments</h3>
+      <h3 className="font-display text-lg font-bold text-slate-100">Comments</h3>
 
       <div className="mt-4 flex gap-3">
         <Avatar user={me} size="sm" />
         <form onSubmit={submitComment} className="flex-1">
           {replyTo && (
-            <div className="mb-2 flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700">
+            <div className="mb-2 flex items-center justify-between rounded-xl bg-violet-500/15 px-3 py-2 text-xs font-medium text-violet-200">
               <span>
                 Replying to <b>@{replyTo.author?.username}</b>
               </span>
               <button
                 type="button"
                 onClick={() => setReplyTo(null)}
-                className="font-bold text-slate-400 hover:text-rose-500"
+                className="font-bold text-slate-400 hover:text-rose-400"
               >
                 ✕
               </button>
@@ -83,7 +83,7 @@ const CommentSection = ({ postId }) => {
               onChange={(e) => setContent(e.target.value)}
               placeholder={replyTo ? 'Write a reply…' : 'Add a comment…'}
               rows={2}
-              className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none placeholder:text-slate-400"
+              className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1 text-sm text-slate-100 outline-none placeholder:text-slate-500"
             />
             <Button type="submit" size="sm" loading={isLoading} disabled={!content.trim()}>
               Post
@@ -104,7 +104,7 @@ const CommentSection = ({ postId }) => {
         {hasMore && !isFetching && (
           <button
             onClick={() => setFeedCursor(data?.data?.pagination?.cursor)}
-            className="px-3 py-2 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            className="px-3 py-2 text-sm font-semibold text-violet-300 hover:text-violet-200"
           >
             Load more comments
           </button>
