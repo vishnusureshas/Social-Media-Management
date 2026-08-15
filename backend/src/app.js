@@ -20,6 +20,7 @@ import reelRoutes from './routes/reelRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import privacyRoutes from './routes/privacyRoutes.js';
 import securityRoutes from './routes/securityRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 
@@ -72,6 +73,7 @@ app.use('/api/v1/reels', reelRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/privacy', privacyRoutes);
 app.use('/api/v1/security', securityRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

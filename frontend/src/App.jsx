@@ -29,6 +29,7 @@ import SharedReels from './pages/SharedReels';
 import Notifications from './pages/Notifications';
 import PrivacySettings from './pages/PrivacySettings';
 import SecuritySettings from './pages/SecuritySettings';
+import Chat from './pages/Chat';
 
 const App = () => (
   <>
@@ -95,6 +96,11 @@ const App = () => (
         <Route element={<ProtectedRoute />}>
           <Route path="/privacy" element={<PrivacySettings />} />
           <Route path="/security" element={<SecuritySettings />} />
+        </Route>
+
+        {/* Chat (Step 10) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/chat" element={<Chat />} />
         </Route>
 
         {/* Reels (Step 7) */}

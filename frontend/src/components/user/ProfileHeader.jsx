@@ -1,15 +1,29 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import FollowButton from './FollowButton';
 import Button from '../ui/Button';
+import { useCreateConversationMutation } from '../../api/chatApi';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 const initial = (name) => (name || 'U')[0].toUpperCase();
 
 const ProfileHeader = ({ user, loading = false }) => {
   const { user: me } = useAuth();
+  const navigate = useNavigate();
+  const [createConversation] = useCreateConversationMutation();
   if (loading || !user) return null;
 
   const isOwn = me && String(me._id) === String(user._id);
+
+  const handleMessage = async () => {
+    try {
+      const res = await createConversation({ type: 'direct', participant: user._id }).unwrap();
+      navigate(`/chat?conversation=${res?.data?.conversation?._id}`);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not open a conversation.'));
+    }
+  };
 
   return (
     <div className="glass-strong overflow-hidden rounded-3xl animate-fade-up">
@@ -85,7 +99,15 @@ const ProfileHeader = ({ user, loading = false }) => {
                 </Button>
               </Link>
             ) : (
-              <FollowButton username={user.username} isFollowing={user.isFollowing} size="sm" />
+              <>
+                <Button variant="secondary" size="sm" onClick={handleMessage}>
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Message
+                </Button>
+                <FollowButton username={user.username} isFollowing={user.isFollowing} size="sm" />
+              </>
             )}
           </div>
         </div>

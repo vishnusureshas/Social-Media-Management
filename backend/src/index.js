@@ -4,6 +4,7 @@ import config from './config/env.js';
 import connectDB from './config/db.js';
 import { connectRedis, disconnectRedis } from './config/redis.js';
 import app from './app.js';
+import initSocket from './sockets/index.js';
 
 const server = http.createServer(app);
 
@@ -14,12 +15,7 @@ const io = new Server(server, {
   },
 });
 
-io.on('connection', (socket) => {
-  console.log(`[socket] client connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log(`[socket] client disconnected: ${socket.id}`);
-  });
-});
+initSocket(io);
 
 app.set('io', io);
 

@@ -5,6 +5,23 @@ import { useAuth } from '../hooks/useAuth';
 import { useLogoutMutation } from '../api/authApi';
 import NotificationBell from '../components/notifications/NotificationBell';
 import toast from 'react-hot-toast';
+import { useChatUnreadTotal } from '../hooks/useChatUnread';
+
+const ChatIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ChatUnreadBadge = () => {
+  const total = useChatUnreadTotal();
+  if (total <= 0) return null;
+  return (
+    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1.5 text-[11px] font-bold text-white">
+      {total > 99 ? '99+' : total}
+    </span>
+  );
+};
 
 const RootLayout = () => {
   const { isAuthenticated, user } = useAuth();
@@ -81,6 +98,13 @@ const RootLayout = () => {
                   </span>
                 </Link>
                 <NotificationBell />
+                <Link to="/chat" className="relative">
+                  <span className="glass inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-brand-300 hover:text-brand-600">
+                    <ChatIcon />
+                    Messages
+                  </span>
+                  <ChatUnreadBadge />
+                </Link>
                 <Link to="/reels">
                   <span className="glass inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-brand-300 hover:text-brand-600">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">

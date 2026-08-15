@@ -22,6 +22,7 @@ Backend readiness status:
 | Step 7       | Reels (short-form video, algorithmic feed) | ✅ Done |
 | Step 8       | Notifications (likes, comments, follows, mentions, shares, unread badge) | ✅ Done |
 | Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
+| Step 10      | Chat (DM + group, socket, typing/read receipts, presence) | ✅ Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -1048,3 +1049,78 @@ useGetSecurityLogsQuery({ page, limit })         // GET /security/logs       →
 - [x] Security activity log lists login/failed-login/2FA/password/logout events with device + IP
 - [x] `Blocked`/`Muted`/`Sessions`/`SecurityLogs`/`Auth` tags keep lists, badge and `twoFAEnabled` consistent after mutations
 - [x] Blocked/muted suppression reflects server-side across feeds, suggestions, search, notifications and profiles
+
+### Step 10 — Chat module (backend + frontend integration)
+
+Backend (Step 10) is complete: models, REST endpoints, socket handlers. The design is in `BACKEND-DESIGN.md` (Conversation, lines 395–409; Message, lines 411–425; CHAT REST endpoints, lines 698–705; socket events, lines 781–798; roadmap #10, line 861).
+
+#### Backend modules (all new)
+
+| File | Purpose |
+|------|---------|
+| `models/Conversation.js` | conversation (`direct`/`group`), participants, groupName/Avatar, admin, lastMessage, mutedBy |
+| `models/Message.js` | message (`text`/`image`/`video`/`file`), media[], readBy[], deletedFor[] |
+| `services/chatService.js` | DM policy + block checks, get-or-create DM, group creation, send/mark-read helpers |
+| `controllers/chatController.js` | REST handlers |
+| `routes/chatRoutes.js` | mounted at `/api/v1/chat` |
+| `sockets/auth.js` | JWT handshake check (`socket.handshake.auth.token`) |
+| `sockets/chat.js` | `message:send` / `message:typing` / `message:read` |
+| `sockets/presence.js` | online map + `presence:update` broadcasts, `lastSeen` persist |
+| `sockets/index.js` | join conversation rooms on connect |
+
+#### REST API (base `http://localhost:5000/api/v1/chat`, all `protect`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/conversations?page&limit` | List conversations + `unread` + `peer` per row |
+| POST   | `/conversations` | Start DM `{ type:'direct', participant }` / group `{ type:'group', participants[], groupName }` |
+| GET    | `/conversations/:id` | Conversation detail (403 if blocked edge) |
+| GET    | `/conversations/:id/messages?cursor&limit` | Paginated history (newest-first; `cursor` is a bare ObjectId, pass it straight back) |
+| PUT    | `/conversations/:id/read` | Mark conversation read |
+
+- **DM policy** enforced server-side from the recipient's `user.privacy.messages`: `nobody` → 403; `followers` → sender must be a follower of the recipient; blocked edge (either direction) → 403.
+- `createConversation` for DM is **get-or-create** (201 on new / 200 on existing with the same pair).
+- `GET /conversations` decodes the DM `peer` (the other participant) so the inbox can render an avatar/name without joining the socket.
+
+#### Socket contract (client connects with `{ auth: { token } }`)
+
+```
+Client → Server:
+  message:send    { conversationId, content, media: [{url, mediaType}] }   ack(s)
+  message:typing  { conversationId, isTyping }
+  message:read    { conversationId, messageIds? }   (no ids → mark all)
+
+Server → Client:
+  message:new      { conversationId, message }         → conversation room
+  message:typing   { conversationId, userId, isTyping } → peers in room
+  message:read     { conversationId, userId, messageIds | all }
+  presence:update  { userId, online, lastSeen }         → 'presence' room
+```
+
+- Socket auth rejects connections without a valid access token (`socket.handshake.auth.token`).
+- New messages emit `message:new` to `conversation:{id}`; the sender is already a `readBy` member, so unread counts stay correct for recipients.
+
+#### Frontend integration (done)
+
+- **`src/api/chatApi.js`** — RTK Query: `useGetConversationsQuery`, `useGetConversationQuery`, `useCreateConversationMutation`, `useGetMessagesQuery` (cursor), `useMarkReadMutation`. Adds `'Conversations'` / `'Messages'` tags to `baseApi.tagTypes`.
+- **`src/store/slices/messagesSlice.js`** — presence, typing, per-conversation thread store; dedupes by `_id`, optimistically marks own messages read, `markRead` handles `all` or specific `messageIds`.
+- **`src/utils/chatSocket.js`** — Socket.IO singleton (URL = `VITE_SOCKET_URL` or same-origin `/`, Vite dev proxy has `/socket.io` with `ws:true`). Reconnects only on token change; multiple `useChatSocket` consumers share one socket.
+- **`src/hooks/useChatSocket.js`** — wires `message:new` → `pushMessage`, `message:read` → `markRead`, `message:typing` → `setTyping`, `presence:update` → `setPresence`; exposes `joinConversation` (also emits `conversation:join`), `sendMessage` (ack backpressure), `emitTyping`, `emitRead`.
+- **`src/pages/Chat.jsx`** (`/chat`, protected, nav "Messages") — inbox list (peer avatar, last message, relative time, unread badge, online dot) + thread pane (cursor "Load older", bubble list with read receipt `✓/✓✓`, typing indicator, textarea composer, Enter-to-send). Opens a DM via `?conversation=<id>` from `ProfileHeader.handleMessage`.
+- **`src/hooks/useChatUnread.js`** — sums `unread` across conversations (30s poll) for the `Messages` nav badge.
+- **`ProfileHeader`** — added a **Message** button (creates conversation, navigates to `/chat?conversation=...`).
+- **Wiring** — route in `App.jsx` under a protected block; nav link + `ChatUnreadBadge` in `RootLayout`; `messagesReducer` in `store/index.js`.
+- **Deploy note (prod)** — nginx must add `location /socket.io/ { proxy_pass http://backend:5000; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }` (currently only `/api/` is proxied).
+
+### Acceptance Checklist (Step 10 UI — Chat module)
+
+- [ ] `/chat` renders the conversation inbox with peer name, last-message preview, relative time, and unread badge
+- [ ] Select a conversation → opens the thread; "Load older" paginates via cursor
+- [ ] Send a text message via Enter/Send; it appears immediately in the thread, then is confirmed by the socket ack
+- [ ] A second account's message arrives live via `message:new` and the inbox preview + unread badge update
+- [ ] Typing indicator shows when the peer is typing and clears on idle
+- [ ] Read receipts render as `✓` for own unread, `✓✓` once the peer's client marks read
+- [ ] Profile **Message** button opens (or reuses) the DM and lands on `/chat?conversation=...`
+- [ ] `nobody` / `followers` DM policies and blocked users are rejected with the server's message
+- [ ] Presence dot shows online peers in the inbox and a `presence:update` broadcast reflects online/offline + `lastSeen`
+- [ ] Socket reconnects using the current access token; a rotated token swaps the socket without a full page reload
