@@ -73,7 +73,7 @@ app.use('/api/v1/reels', reelRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/privacy', privacyRoutes);
 app.use('/api/v1/security', securityRoutes);
-app.use('/api/v1/chat', chatRoutes);
+app.use('/api/v1/chat/conversations', chatRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
