@@ -9,6 +9,7 @@ import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadMediaToCloudinary } from '../middlewares/upload.js';
 import { notifyOne, notifyMany } from '../utils/notify.js';
+import { getSuppressedIds } from '../utils/suppression.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const REACTION_EMOJIS = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
@@ -178,7 +179,14 @@ const getFeed = async (req, res, next) => {
     const { cursor, limit } = req.query;
 
     const following = await Follow.find({ follower: req.userId }).distinct('following');
-    const authorIds = [req.userId, ...following.map((id) => new mongoose.Types.ObjectId(id))];
+    const suppressed = await getSuppressedIds(req.userId, 'feed');
+    const authorIds = [
+      req.userId,
+      ...following
+        .map((id) => String(id))
+        .filter((id) => !suppressed.includes(id))
+        .map((id) => new mongoose.Types.ObjectId(id)),
+    ];
 
     const query = {
       author: { $in: authorIds },
@@ -417,9 +425,12 @@ const getExplore = async (req, res, next) => {
   try {
     const { cursor, limit } = req.query;
 
+    const suppressed = await getSuppressedIds(req.userId, 'feed');
+
     const query = {
       isDeleted: false,
       visibility: 'public',
+      ...(suppressed.length ? { author: { $nin: suppressed } } : {}),
       ...(cursor ? { _id: { $lt: new mongoose.Types.ObjectId(cursor) } } : {}),
     };
 
@@ -450,10 +461,12 @@ const getPostsByTag = async (req, res, next) => {
     const { cursor, limit } = req.query;
 
     const tag = hashtag.toLowerCase();
+    const suppressed = await getSuppressedIds(req.userId, 'feed');
     const query = {
       tags: tag,
       isDeleted: false,
       visibility: 'public',
+      ...(suppressed.length ? { author: { $nin: suppressed } } : {}),
       ...(cursor ? { _id: { $lt: new mongoose.Types.ObjectId(cursor) } } : {}),
     };
 

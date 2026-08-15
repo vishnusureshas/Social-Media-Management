@@ -27,6 +27,8 @@ import SavedPosts from './pages/SavedPosts';
 import Reels from './pages/Reels';
 import SharedReels from './pages/SharedReels';
 import Notifications from './pages/Notifications';
+import PrivacySettings from './pages/PrivacySettings';
+import SecuritySettings from './pages/SecuritySettings';
 
 const App = () => (
   <>
@@ -87,6 +89,12 @@ const App = () => (
         {/* Notifications (Step 8) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/notifications" element={<Notifications />} />
+        </Route>
+
+        {/* Privacy & Security (Step 8) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/privacy" element={<PrivacySettings />} />
+          <Route path="/security" element={<SecuritySettings />} />
         </Route>
 
         {/* Reels (Step 7) */}

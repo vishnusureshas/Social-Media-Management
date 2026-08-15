@@ -2,7 +2,7 @@
 
 Frontend stack: **React (Vite) + JavaScript + Tailwind CSS + Redux Toolkit (RTK Query)**.
 
-> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications).
+> ⚠️ This document covers the **implemented backend steps** (Step 1: Setup, Step 2: Auth, Step 3: User, Step 4: Posts, Step 5: Reactions & Polls, Step 6: Stories, Step 7: Reels, Step 8: Notifications, Step 8a: Privacy & Security).
 > New pages/slices are appended here as each backend step is completed.
 
 ---
@@ -21,6 +21,7 @@ Backend readiness status:
 | Step 6       | Stories (24h ephemeral, views, viewers)    | ✅ Done |
 | Step 7       | Reels (short-form video, algorithmic feed) | ✅ Done |
 | Step 8       | Notifications (likes, comments, follows, mentions, shares, unread badge) | ✅ Done |
+| Step 8a      | Privacy & Security (block, mute, 2FA, sessions, activity logs) | ✅ Done |
 
 ### Live Backend Endpoints (base `http://localhost:5000/api/v1`)
 
@@ -85,6 +86,41 @@ Backend readiness status:
 | DELETE | `/:id`          | —                   | Soft-delete own comment          |
 | POST   | `/:id/like`     | —                   | Like / unlike comment            |
 
+### Privacy module endpoints (base `http://localhost:5000/api/v1/privacy`)
+
+**All require auth.**
+
+| Method | Endpoint                 | Body                    | Purpose                                  |
+|--------|--------------------------|-------------------------|------------------------------------------|
+| POST   | `/block/:userId`         | —                       | Block a user (two-way cutoff, auto-unfollow, clears notifications/mutes) |
+| DELETE | `/block/:userId`         | —                       | Unblock a user                           |
+| GET    | `/blocked`               | — (query `page`, `limit`) | List blocked users (paginated)          |
+| POST   | `/mute/:userId`          | `{ scope }`             | Mute a user — scope: `feed` \| `stories` \| `notifications` \| `all` |
+| DELETE | `/mute/:userId`          | —                       | Unmute a user                            |
+| GET    | `/muted`                 | — (query `page`, `limit`) | List muted users + scope (paginated)    |
+| PATCH  | `/settings`              | `{ postsVisibleTo?, messages? }` | Update privacy settings           |
+
+- `postsVisibleTo` enum: `public` \| `followers` \| `onlyme`; `messages` enum: `everyone` \| `followers` \| `nobody`.
+- `GET /blocked` → `{ users: [UserView...], pagination }`; `GET /muted` → `{ users: [{ user: UserView, scope }], pagination }`.
+
+### Security module endpoints (base `http://localhost:5000/api/v1/security`)
+
+**All require auth except `POST /2fa/login`.**
+
+| Method | Endpoint              | Body                    | Purpose                                        |
+|--------|-----------------------|-------------------------|------------------------------------------------|
+| POST   | `/2fa/setup`          | —                       | Generate TOTP secret + otpauth URL (not yet enabled) |
+| POST   | `/2fa/enable`         | `{ code }`              | Verify 6-digit code & enable 2FA; returns one-time `backupCodes` |
+| POST   | `/2fa/disable`        | `{ code }`              | Verify current code & disable 2FA             |
+| POST   | `/2fa/login`          | `{ challenge, code }`   | Complete login step-2 (TOTP or one backup code) |
+| GET    | `/sessions`           | —                       | List active signed-in sessions                |
+| DELETE | `/sessions/:id`       | —                       | Revoke a session (log out that device)        |
+| GET    | `/logs`               | — (query `page`, `limit`) | Security activity log (paginated)            |
+
+- 2FA flow: `login` returns `{ requiresTwoFactor: true, challenge, twoFA: true }` when 2FA is enabled (no tokens yet) → UI shows a code screen → `POST /security/2fa/login` returns the normal token pair.
+- `GET /sessions` → `{ sessions: [{ _id, device: {browser, os}, ip, createdAt, expiresAt }] }`; `GET /logs` → `{ logs: [{ action, ip, device, success, createdAt }], pagination }`.
+- `action` enum: `login | login_failed | 2fa_setup | 2fa_enabled | 2fa_disabled | 2fa_login | password_changed | logout | session_revoked`.
+
 > **Post JSON shape** from `GET /posts/:id` and `GET /posts`:
 > `{ post: { _id, author: {_id, username, fullName, avatar, verified, bio, counts}, content, media: [{type: 'image'|'video', public_id, url, thumb}], tags, mentions, location, visibility, likesCount, commentsCount, sharesCount, views, isPinned, originalPost?, isLiked, isSaved, createdAt, updatedAt } }`
 >
@@ -145,7 +181,14 @@ frontend/
 │   ├── api/
 │   │   ├── baseApi.js        # RTK Query createApi, fetchBaseQuery, auth header, 401 refresh
 │   │   ├── authApi.js        # injected endpoints (register, login, ...)
-│   │   └── userApi.js        # injected endpoints (profile, follow, search, suggestions, upload)
+│   │   ├── userApi.js        # injected endpoints (profile, follow, search, suggestions, upload)
+│   │   ├── reactionApi.js    # injected endpoints (reactions) [step 5]
+│   │   ├── pollApi.js        # injected endpoints (polls) [step 5]
+│   │   ├── storyApi.js       # injected endpoints (stories) [step 6]
+│   │   ├── reelApi.js        # injected endpoints (reels, shares) [step 7]
+│   │   ├── notificationApi.js# injected endpoints (notifications, badge) [step 8]
+│   │   ├── privacyApi.js     # injected endpoints (block/mute/settings) [step 8a]
+│   │   └── securityApi.js    # injected endpoints (2FA, sessions, logs) [step 8a]
 │   ├── hooks/
 │   │   ├── useAuth.js        # useSelector/useDispatch helpers
 │   │   └── useDocumentTitle.js
@@ -174,7 +217,10 @@ frontend/
 │   │   ├── Compose.jsx          # create post (text + media upload) [step 4]
 │   │   ├── Explore.jsx          # popular posts grid [step 4]
 │   │   ├── HashtagFeed.jsx      # /tag/:hashtag posts [step 4]
-│   │   └── SavedPosts.jsx       # saved/bookmarked posts [step 4]
+│   │   ├── SavedPosts.jsx       # saved/bookmarked posts [step 4]
+│   │   ├── Notifications.jsx    # /notifications feed [step 8]
+│   │   ├── PrivacySettings.jsx  # /privacy: visibility, message policy, blocked/muted lists [step 8a]
+│   │   └── SecuritySettings.jsx # /security: 2FA, active sessions, activity log [step 8a]
 │   ├── components/
 │   │   ├── ui/                # Button, Input, Card, Spinner, OTPInput
 │   │   ├── auth/              # AuthLayout (split-screen), AuthLogo
@@ -253,6 +299,9 @@ export const baseApi = createApi({
   endpoints: () => ({}),
 });
 ```
+
+> **Runtime tag registry** (from `src/api/baseApi.js`) now includes the steps wired so far:
+> `'Auth','User','Profile','Followers','Following','Suggestions','Post','Feed','Explore','Hashtag','Saved','Poll','Stories','Story','Reels','Reel','SharedReels','Notifications','NotificationCount','Blocked','Muted','Sessions','SecurityLogs'`
 
 > **401 auto-refresh — implemented in `baseApi.js`:** `baseQueryWithReauth` wraps `fetchBaseQuery`. On a `401` it calls `/auth/refresh` with the stored refresh token, dispatches `setCredentials` with the rotated pair, and retries the original request. If refresh fails it dispatches `clearCredentials`. The refresh/logout calls themselves are excluded from the reauth loop. This replaces the earlier "add later" recommendation — the UI gets a transparent session refresh and only sees a logout after real auth failure.
 
@@ -553,6 +602,11 @@ RTK Query uses HTTP status for success/error, so components map:
 | `/explore`               | Explore           | Protected    | `posts/explore` [step 4]           |
 | `/tag/:hashtag`          | HashtagFeed       | Protected    | `posts/tag/:hashtag` [step 4]      |
 | `/saved`                 | SavedPosts        | Protected    | `posts/:id/save`, `posts/explore` [step 4] |
+| `/reels`                 | Reels             | Protected    | `reels`, `reels/:id` [step 7]             |
+| `/reels/shared`          | SharedReels       | Protected    | `reels/shared-with-me` [step 7]           |
+| `/notifications`         | Notifications     | Protected    | `notifications`, `notifications/unread-count` [step 8] |
+| `/privacy`               | PrivacySettings   | Protected    | `privacy/settings`, `privacy/blocked`, `privacy/muted` [step 8a] |
+| `/security`              | SecuritySettings  | Protected    | `security/2fa/*`, `security/sessions`, `security/logs` [step 8a] |
 
 > `/u/:username/edit` renders the edit form **only when** the authed user owns the profile (`auth.user.username === :username`); otherwise redirect to the public profile page.
 
@@ -921,3 +975,76 @@ useMarkOneReadMutation(id)                       // PUT /notifications/:id/read
 - [ ] "Mark all read" clears the whole list and zeroes the badge
 - [ ] Cards deep-link correctly (post → `/post/:id`, reel → `/reels`, actor → profile)
 - [ ] `Notifications`/`NotificationCount` tags keep the list and badge consistent after mutations
+
+### Step 8a — Privacy & Security module (frontend integration plan)
+
+Backend (Step 8a) is complete and mounted at `/api/v1/privacy` and `/api/v1/security`. The design is in `BACKEND-DESIGN.md` (Block/Mute models, lines 303–322; Session, lines 324–337; SecurityLog, lines 339–351; PRIVACY + SECURITY endpoints, lines 713–733). Privacy content (block/mute/settings) plus security measures (2FA, sessions, activity log) were integrated together into the frontend as part of the Step 8 rollout.
+
+#### API modules
+
+**`src/api/privacyApi.js`**
+
+```js
+useGetBlockedQuery({ page, limit })              // GET /privacy/blocked     → 'Blocked'
+useBlockUserMutation(userId)                     // POST /privacy/block/:userId
+useUnblockUserMutation(userId)                   // DELETE /privacy/block/:userId
+useGetMutedQuery({ page, limit })                // GET /privacy/muted       → 'Muted'
+useMuteUserMutation({ userId, scope })           // POST /privacy/mute/:userId
+useUnmuteUserMutation(userId)                    // DELETE /privacy/mute/:userId
+useUpdatePrivacySettingsMutation(body)           // PATCH /privacy/settings
+```
+
+**`src/api/securityApi.js`**
+
+```js
+useSetup2FAMutation()                            // POST /security/2fa/setup
+useEnable2FAMutation(code)                       // POST /security/2fa/enable { code }
+useDisable2FAMutation(code)                      // POST /security/2fa/disable { code }
+useLogin2FAMutation({ challenge, code })         // POST /security/2fa/login
+useGetSessionsQuery()                            // GET /security/sessions   → 'Sessions'
+useRevokeSessionMutation(id)                     // DELETE /security/sessions/:id
+useGetSecurityLogsQuery({ page, limit })         // GET /security/logs       → 'SecurityLogs'
+```
+
+- Tag strategy: `getBlocked` provides `'Blocked'`, `getMuted` provides `'Muted'`; block/unblock also invalidate `['Followers','Following','Suggestions']` (the graph changes); `getSessions` provides `'Sessions'`, `getSecurityLogs` provides `'SecurityLogs'`; 2FA setup/enable/disable invalidate `['Auth','SecurityLogs']` (the profile `twoFAEnabled` flag lives on the auth user); `revokeSession` invalidates `['Sessions','SecurityLogs']`.
+- Add `'Blocked','Muted','Sessions','SecurityLogs'` to `baseApi.tagTypes` (done).
+
+#### Backend contracts the UI must honor
+
+- `GET /privacy/blocked` → `{ users: [UserView...], pagination: { page, limit, total, pages } }`. `GET /privacy/muted` → `{ users: [{ user: UserView, scope }], pagination }`. UserView is the same public profile shape as search (`username, fullName, avatar, verified, bio, counts`).
+- `POST /privacy/mute/:userId` accepts `{ scope?: 'feed'|'stories'|'notifications'|'all' }` (defaults to `'all'`) — the muted list displays the resulting scope per user.
+- `PATCH /privacy/settings` accepts `{ postsVisibleTo?, messages? }` and returns `{ privacy }`; both fields also ship on the auth `user.privacy` used to pre-fill the toggles.
+- `POST /security/2fa/setup` → `{ secret, otpauthUrl }` — shows the manual authenticator key (no QR lib is used).
+- `POST /security/2fa/enable` → `{ twoFA: true, backupCodes: [String] }` — the codes are returned **once**; the UI must prompt the user to store them.
+- `POST /auth/login` (2FA users) → `{ requiresTwoFactor: true, challenge }` — NO tokens yet. The Login page must swap to a code screen and call `POST /security/2fa/login { challenge, code }`, which returns the normal token pair + user.
+- `GET /security/sessions` → `{ sessions: [{ _id, device: {browser, os}, ip, createdAt, expiresAt }] }` (only `revoked: false`).
+- `GET /security/logs` → `{ logs: [{ action, ip, device, success, createdAt }], pagination }`. `action` values: `login | login_failed | 2fa_setup | 2fa_enabled | 2fa_disabled | 2fa_login | password_changed | logout | session_revoked`.
+- Backend suppression is applied server-side: blocked/muted authors are hidden from post feed, explore, hashtag feeds, stories ring, reels feed, suggestions, user search, notifications, and profile visibility (403 for blocked users). The UI does not re-filter.
+
+#### Components / Pages
+
+- `src/pages/PrivacySettings.jsx` (`/privacy`, protected, nav "Privacy") — post-visibility (public / followers / onlyme) and message-policy (everyone / followers / nobody) segmented toggles with a Save button (`updatePrivacySettings`), plus the blocked list (`unblockUser` per row) and the muted list showing scope (`unmuteUser` per row).
+- `src/pages/SecuritySettings.jsx` (`/security`, protected, nav "Security") — three cards:
+  - **2FA**: disabled state → "Set up" → shows manual `secret` + 6-digit verify → enable returns `backupCodes` shown once in a grid; enabled state → "Disable 2FA" with a current-code confirm.
+  - **Active sessions**: lists `device.browser · device.os`, `ip`, signed-in time, with a **Revoke** button per row.
+  - **Security activity**: log feed with success/failure dot, human `action` label, device + IP + timestamp.
+- `src/pages/Login.jsx` — handles the two-step flow: after `login`, if `res.data.requiresTwoFactor`, render the 6-digit code screen and submit via `login2FA`; navigate on success.
+- Nav links for both pages were added to `RootLayout` (icon + `/privacy`, icon + `/security`) — both behind `ProtectedRoute`.
+
+#### Wiring
+
+- Routes added in `App.jsx` under the Step 8 protected `<Route>` block.
+- `baseApi.tagTypes` gained `'Blocked','Muted','Sessions','SecurityLogs'`.
+- 2FA secret/backup codes are TOTP (RFC 6238) generated server-side (`utils/totp.js`, native crypto — no QR dependency); the authenticator key is displayed for manual entry.
+
+### Acceptance Checklist (Step 8a UI — Privacy & Security module)
+
+- [x] `/privacy` toggles persist `postsVisibleTo` + `messages`; toggles pre-fill from `user.privacy`
+- [x] Blocked list renders each user with an avatar + unblock action that removes them immediately
+- [x] Muted list renders users with their mute scope + unmute action
+- [x] `/security` shows the 2FA setup → key → enable → backup-codes flow; disabling requires a current code
+- [x] Login with a 2FA-enabled account stops at the code screen, then signs in via `security/2fa/login`; a backup code also works
+- [x] Sessions list shows all active devices; "Revoke" logs that device out (the badge/list refresh via `Sessions` tag)
+- [x] Security activity log lists login/failed-login/2FA/password/logout events with device + IP
+- [x] `Blocked`/`Muted`/`Sessions`/`SecurityLogs`/`Auth` tags keep lists, badge and `twoFAEnabled` consistent after mutations
+- [x] Blocked/muted suppression reflects server-side across feeds, suggestions, search, notifications and profiles

@@ -2,7 +2,8 @@ import User from '../models/User.js';
 import SessionModel from '../models/SessionModel.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
-import { verifyRefreshToken } from '../config/jwt.js';
+import { verifyRefreshToken, sign2FAChallenge } from '../config/jwt.js';
+import SecurityLog from '../models/SecurityLogModel.js';
 import { hashToken } from '../utils/token.js';
 import config from '../config/env.js';
 import * as cache from '../services/cacheService.js';
@@ -19,6 +20,14 @@ const devOtpPayload = (otp) =>
   config.env === 'development' ? { devOtp: otp } : {};
 
 const userCacheKey = (userId) => `user:${userId}`;
+
+const logSecurityEvent = (userId, action, req, success = true) => {
+  const ua = req.headers['user-agent'] || '';
+  const osRegex = /(Windows NT [\d.]+|Mac OS X [\d_]+|Android [\d.]+|iPhone OS [\d_]+|Linux)/;
+  const browserRegex = /(Chrome|Firefox|Safari|Edge|Opera)\/[\d.]+/;
+  const device = `${browserRegex.exec(ua)?.[0] || 'Unknown Browser'} · ${osRegex.exec(ua)?.[0] || 'Unknown OS'}`;
+  return SecurityLog.create({ user: userId, action, ip: req.ip, device, success });
+};
 
 const register = async (req, res, next) => {
   try {
@@ -95,13 +104,24 @@ const login = async (req, res, next) => {
     if (!user) throw new APIError(401, 'Invalid email or password.');
 
     const passwordMatches = await user.comparePassword(password);
-    if (!passwordMatches) throw new APIError(401, 'Invalid email or password.');
+    if (!passwordMatches) {
+      if (user) await logSecurityEvent(user._id, 'login_failed', req, false);
+      throw new APIError(401, 'Invalid email or password.');
+    }
     if (user.isBanned) throw new APIError(403, 'Your account has been banned. Contact support.');
     if (!user.isActive) throw new APIError(403, 'Account is deactivated.');
 
-    user.lastSeen = new Date();
-    await user.save();
+    if (user.twoFA?.enabled) {
+      const challenge = sign2FAChallenge({ id: user._id, type: '2fa' });
+      sendSuccess(res, 200, 'Two-factor code required.', {
+        requiresTwoFactor: true,
+        challenge,
+        twoFA: true,
+      });
+      return;
+    }
 
+    await logSecurityEvent(user._id, 'login', req);
     const tokens = await issueTokens(user, req);
     sendSuccess(res, 200, 'Login successful.', {
       ...buildTokenPair(user, tokens.accessToken, tokens.refreshToken, tokens.sessionId),
@@ -155,6 +175,8 @@ const logout = async (req, res, next) => {
         { revoked: true }
       );
     }
+
+    await logSecurityEvent(req.userId, 'logout', req);
 
     sendSuccess(res, 200, 'Logged out successfully.');
   } catch (err) {
@@ -218,6 +240,7 @@ const changePassword = async (req, res, next) => {
 
     await cache.del(userCacheKey(user._id));
     await SessionModel.updateMany({ user: user._id, revoked: false }, { revoked: true });
+    await logSecurityEvent(user._id, 'password_changed', req);
 
     sendSuccess(res, 200, 'Password changed successfully. Please log in again.');
   } catch (err) {

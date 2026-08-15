@@ -4,6 +4,7 @@ import * as yup from 'yup';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useLoginMutation } from '../api/authApi';
+import { useLogin2FAMutation } from '../api/securityApi';
 import { useState } from 'react';
 import AuthLayout from '../layouts/AuthLayout';
 import Input from '../components/ui/Input';
@@ -30,7 +31,11 @@ const EyeIcon = ({ open }) =>
 
 const Login = () => {
   const [login] = useLoginMutation();
+  const [login2FA] = useLogin2FAMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const [twoFactorChallenge, setTwoFactorChallenge] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [submitting2FA, setSubmitting2FA] = useState(false);
   const navigate = useNavigate();
   const [params] = useSearchParams();
 
@@ -44,6 +49,11 @@ const Login = () => {
   const onSubmit = async (values) => {
     try {
       const res = await login(values).unwrap();
+      if (res?.data?.requiresTwoFactor) {
+        setTwoFactorChallenge(res.data.challenge);
+        toast('Two-factor code required. Enter the code from your authenticator app.');
+        return;
+      }
       toast.success(res?.message || 'Welcome back!');
       const username = res?.data?.user?.username;
       navigate(username ? `/u/${username}` : '/account', { replace: true });
@@ -54,7 +64,57 @@ const Login = () => {
     }
   };
 
+  const onSubmit2FA = async (e) => {
+    e.preventDefault();
+    if (!twoFactorChallenge) return;
+    setSubmitting2FA(true);
+    try {
+      const res = await login2FA({ challenge: twoFactorChallenge, code: twoFactorCode }).unwrap();
+      toast.success(res?.message || 'Welcome back!');
+      setTwoFactorChallenge(null);
+      const username = res?.data?.user?.username;
+      navigate(username ? `/u/${username}` : '/account', { replace: true });
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Two-factor verification failed'));
+    } finally {
+      setSubmitting2FA(false);
+    }
+  };
+
   const email = params.get('email');
+
+  if (twoFactorChallenge) {
+    return (
+      <AuthLayout
+        title="Two-factor authentication"
+        subtitle="Enter the 6-digit code from your authenticator app"
+      >
+        <form onSubmit={onSubmit2FA} className="space-y-5">
+          <Input
+            label="Verification code"
+            type="text"
+            inputMode="numeric"
+            placeholder="000000"
+            maxLength={6}
+            value={twoFactorCode}
+            onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+            icon={({ className }) => (
+              <svg className={className} viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l4 4-4 4-4-4 4-4zM5 15a7 7 0 1014 0V9a7 7 0 10-14 0v6zm0 0h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          />
+          <Button type="submit" loading={submitting2FA} className="w-full" size="lg">
+            {submitting2FA ? 'Verifying...' : 'Verify and log in'}
+          </Button>
+          <p className="pt-2 text-center text-sm text-slate-500">
+            Used a backup code? Enter it above. If you have no codes left, contact support.
+          </p>
+        </form>
+        <AuroraBackground />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout

@@ -8,6 +8,7 @@ import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import { uploadReelToCloudinary } from '../middlewares/upload.js';
 import { notifyOne, notifyMany } from '../utils/notify.js';
+import { getSuppressedIds } from '../utils/suppression.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 const MAX_REEL_SECONDS = 90;
@@ -99,7 +100,11 @@ const getReels = async (req, res, next) => {
   try {
     const { cursor, limit } = req.query;
 
-    const pipe = [{ $match: { isDeleted: false } }];
+    const suppressed = await getSuppressedIds(req.userId, 'feed');
+
+    const pipe = [
+      { $match: { isDeleted: false, ...(suppressed.length ? { author: { $nin: suppressed } } : {}) } },
+    ];
 
     pipe.push({
       $addFields: {

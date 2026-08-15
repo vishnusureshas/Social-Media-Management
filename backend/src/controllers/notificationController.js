@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Notification from '../models/Notification.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
+import { getMutedIds } from '../utils/suppression.js';
 
 const USER_FIELDS = 'username fullName avatar verified bio counts';
 
@@ -9,7 +10,10 @@ const getNotifications = async (req, res, next) => {
   try {
     const { cursor, limit = 20 } = req.query;
 
+    const suppressed = await getMutedIds(req.userId, 'notifications');
+
     const match = { recipient: req.userId };
+    if (suppressed.length) match.actor = { $nin: suppressed };
     if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
       match._id = { $lt: new mongoose.Types.ObjectId(cursor) };
     }

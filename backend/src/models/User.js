@@ -92,6 +92,7 @@ userSchema.methods.toProfileJSON = function (includePrivate = false) {
     privacy: this.privacy,
     counts: this.counts,
     emailVerified: this.emailVerified,
+    twoFAEnabled: !!this.twoFA?.enabled,
     createdAt: this.createdAt,
   };
   if (includePrivate) json.email = this.email;

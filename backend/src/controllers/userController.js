@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Follow from '../models/FollowModel.js';
+import Block from '../models/BlockModel.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
 import * as cache from '../services/cacheService.js';
 import { uploadToCloudinary } from '../middlewares/upload.js';
 import { notifyOne } from '../utils/notify.js';
+import { getBlockedIds } from '../utils/suppression.js';
 
 const userCacheKey = (userId) => `user:${userId}`;
 const profileCacheKey = (username, viewerId) =>
@@ -49,6 +51,17 @@ const getProfile = async (req, res, next) => {
 
     const user = await User.findOne({ username });
     if (!user) throw new APIError(404, 'User not found.');
+
+    if (viewerId && String(viewerId) !== String(user._id)) {
+      const blockedByViewer = await Block.exists({ blocker: viewerId, blocked: user._id });
+      const blockedViewer = await Block.exists({ blocker: user._id, blocked: viewerId });
+      if (blockedByViewer || blockedViewer) {
+        const viewer = await User.findById(viewerId);
+        if (!viewer || viewer.role === 'user') {
+          throw new APIError(403, 'This profile is not available.');
+        }
+      }
+    }
 
     const profile = user.toProfileJSON();
 
@@ -292,9 +305,11 @@ const searchUsers = async (req, res, next) => {
     const { q, page = 1, limit = 10 } = req.query;
 
     const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const blocked = await getBlockedIds(req.userId);
     const query = {
       $and: [
         { isActive: true, isBanned: { $ne: true } },
+        ...(blocked.length ? [{ _id: { $nin: blocked } }] : []),
         { $or: [{ username: regex }, { fullName: regex }] },
       ],
     };
@@ -324,11 +339,12 @@ const getSuggestions = async (req, res, next) => {
     const limit = Math.min(Number(req.query.limit) || 10, 20);
 
     const followed = await Follow.find({ follower: req.userId }).distinct('following');
+    const suppressed = await getBlockedIds(req.userId);
 
     const pipeline = [
       {
         $match: {
-          _id: { $nin: [new mongoose.Types.ObjectId(req.userId), ...followed.map((id) => new mongoose.Types.ObjectId(id))] },
+          _id: { $nin: [new mongoose.Types.ObjectId(req.userId), ...followed.map((id) => new mongoose.Types.ObjectId(id)), ...suppressed] },
           isActive: true,
           isBanned: { $ne: true },
         },
