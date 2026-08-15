@@ -22,7 +22,10 @@ const Reels = () => {
   const safeIndex = Math.min(activeIndex, Math.max(visibleReels.length - 1, 0));
   const activeReel = visibleReels[safeIndex];
 
-  useGetReelQuery(activeReel?._id, { skip: !activeReel });
+  const { data: focusedReelData } = useGetReelQuery(activeReel?._id, {
+    skip: !activeReel,
+  });
+  const focusedReel = focusedReelData?.data?.reel;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -95,7 +98,7 @@ const Reels = () => {
           visibleReels.map((reel, i) => (
             <div key={reel._id} data-reel-item data-reel-index={i} className="h-full snap-start">
               <ReelPlayer
-                reel={reel}
+                reel={i === safeIndex && focusedReel ? focusedReel : reel}
                 active={i === safeIndex}
                 onPlayOnce={(id) => playReel(id)}
                 onOpenComments={setSheetReel}
