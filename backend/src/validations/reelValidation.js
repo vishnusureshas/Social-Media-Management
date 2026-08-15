@@ -27,4 +27,8 @@ const reelCommentSchema = Joi.object({
   }),
 });
 
-export { createReelSchema, idParamSchema, feedQuerySchema, reelCommentSchema };
+const shareReelSchema = Joi.object({
+  recipients: Joi.array().items(objectId).default([]),
+});
+
+export { createReelSchema, idParamSchema, feedQuerySchema, reelCommentSchema, shareReelSchema };

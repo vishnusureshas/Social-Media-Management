@@ -4,23 +4,20 @@ import toast from 'react-hot-toast';
 import { Avatar } from '../user/UserCard';
 import {
   useLikeReelMutation,
-  useShareReelMutation,
   useDeleteReelMutation,
 } from '../../api/reelApi';
 import { useAuth } from '../../hooks/useAuth';
 import { formatRelative } from '../../utils/postUtils';
 import cn from '../../utils/cn';
 
-const ReelPlayer = ({ reel, active, onPlayOnce, onOpenComments, onDeleted }) => {
+const ReelPlayer = ({ reel, active, onPlayOnce, onOpenComments, onOpenShare, onDeleted }) => {
   const { user: me } = useAuth();
   const videoRef = useRef(null);
   const playedRef = useRef(false);
   const [muted, setMuted] = useState(true);
   const [liked, setLiked] = useState(!!reel?.isLiked);
   const [likesCount, setLikesCount] = useState(reel?.likesCount || 0);
-  const [sharesCount, setSharesCount] = useState(reel?.sharesCount || 0);
   const [likeReel] = useLikeReelMutation();
-  const [shareReel] = useShareReelMutation();
   const [deleteReel] = useDeleteReelMutation();
 
   const author = reel?.author;
@@ -57,13 +54,8 @@ const ReelPlayer = ({ reel, active, onPlayOnce, onOpenComments, onDeleted }) => 
     }
   };
 
-  const handleShare = async () => {
-    setSharesCount((c) => c + 1);
-    try {
-      await shareReel(reel._id).unwrap();
-    } catch {
-      toast.error('Unable to share reel.');
-    }
+  const handleShare = () => {
+    onOpenShare?.(reel);
   };
 
   const handleDelete = async () => {
@@ -148,7 +140,7 @@ const ReelPlayer = ({ reel, active, onPlayOnce, onOpenComments, onDeleted }) => 
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-xs font-semibold">{sharesCount}</span>
+              <span className="text-xs font-semibold">{reel?.sharesCount || 0}</span>
             </button>
 
             <button onClick={() => onOpenComments?.(reel)} className={railButton}>

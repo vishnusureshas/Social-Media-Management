@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Reel from '../models/Reel.js';
 import Comment from '../models/Comment.js';
 import Reaction from '../models/Reaction.js';
+import Share from '../models/Share.js';
 import User from '../models/User.js';
 import { sendSuccess } from '../utils/response.js';
 import APIError from '../utils/AppError.js';
@@ -249,12 +250,104 @@ const likeReel = async (req, res, next) => {
 
 const shareReel = async (req, res, next) => {
   try {
+    const { recipients = [] } = req.body;
+
     const reel = await Reel.findOne({ _id: req.params.id, isDeleted: false });
     if (!reel) throw new APIError(404, 'Reel not found.');
 
-    await Reel.updateOne({ _id: reel._id }, { $inc: { sharesCount: 1 } });
+    const recipientIds = [...new Set(recipients.map((r) => String(r)))].filter(
+      (r) => mongoose.Types.ObjectId.isValid(r) && r !== String(req.userId)
+    );
 
-    sendSuccess(res, 200, 'Reel shared.', { sharesCount: reel.sharesCount + 1 });
+    if (recipientIds.length === 0) {
+      await Reel.updateOne({ _id: reel._id }, { $inc: { sharesCount: 1 } });
+      return sendSuccess(res, 200, 'Reel shared.', {
+        sharesCount: reel.sharesCount + 1,
+        recipientsShared: 0,
+      });
+    }
+
+    const existing = await Share.find({
+      sharer: req.userId,
+      recipient: { $in: recipientIds },
+      targetType: 'reel',
+      targetId: reel._id,
+    }).select('recipient');
+    const alreadyShared = new Set(existing.map((s) => String(s.recipient)));
+
+    const newShares = recipientIds
+      .filter((r) => !alreadyShared.has(r))
+      .map((r) => ({
+        sharer: req.userId,
+        recipient: r,
+        targetType: 'reel',
+        targetId: reel._id,
+        targetModel: 'Reel',
+      }));
+
+    if (newShares.length) {
+      await Share.insertMany(newShares);
+      await Reel.updateOne({ _id: reel._id }, { $inc: { sharesCount: newShares.length } });
+    }
+
+    sendSuccess(res, 200, 'Reel shared.', {
+      sharesCount: reel.sharesCount + newShares.length,
+      recipientsShared: recipientIds.length,
+      alreadyShared: recipientIds.length - newShares.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getSharedWithMe = async (req, res, next) => {
+  try {
+    const { cursor, limit = 20 } = req.query;
+
+    const match = { recipient: req.userId, isDeleted: false };
+    if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+      match.createdAt = { $lt: new mongoose.Types.ObjectId(cursor).getTimestamp() };
+    }
+
+    const rows = await Share.find(match)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit) + 1)
+      .populate('sharer', USER_FIELDS);
+
+    const hasMore = rows.length > Number(limit);
+    const pageShares = hasMore ? rows.slice(0, Number(limit)) : rows;
+
+    const reelIds = pageShares.map((s) => s.targetId);
+    const reels = await Reel.find({ _id: { $in: reelIds }, isDeleted: false })
+      .populate('author', USER_FIELDS)
+      .lean();
+
+    const reelMap = new Map(reels.map((r) => [String(r._id), r]));
+    const sharerMap = new Map(pageShares.map((s) => [String(s.targetId), s.sharer]));
+
+    const sharedReels = reelIds
+      .map((id) => {
+        const reel = reelMap.get(String(id));
+        if (!reel) return null;
+        return {
+          ...reel,
+          sharedBy: sharerMap.get(String(id)) || null,
+          isRead: pageShares.find((s) => String(s.targetId) === String(id))?.isRead ?? false,
+        };
+      })
+      .filter(Boolean);
+
+    const decorated = await decorateReels(sharedReels, req.userId);
+
+    const nextCursor = pageShares.length
+      ? String(pageShares[pageShares.length - 1]._id)
+      : null;
+
+    sendSuccess(res, 200, 'Shared reels retrieved.', {
+      reels: decorated,
+      pagination: { cursor: nextCursor, hasMore },
+      unread: await Share.countDocuments({ recipient: req.userId, isRead: false, isDeleted: false }),
+    });
   } catch (err) {
     next(err);
   }
@@ -342,6 +435,7 @@ export {
   deleteReel,
   likeReel,
   shareReel,
+  getSharedWithMe,
   addReelComment,
   getReelComments,
 };

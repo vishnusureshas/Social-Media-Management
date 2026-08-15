@@ -25,6 +25,7 @@ import Explore from './pages/Explore';
 import HashtagFeed from './pages/HashtagFeed';
 import SavedPosts from './pages/SavedPosts';
 import Reels from './pages/Reels';
+import SharedReels from './pages/SharedReels';
 
 const App = () => (
   <>
@@ -85,6 +86,7 @@ const App = () => (
         {/* Reels (Step 7) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/reels" element={<Reels />} />
+          <Route path="/reels/shared" element={<SharedReels />} />
         </Route>
 
         {/* Future modules (placeholder until integrated) */}

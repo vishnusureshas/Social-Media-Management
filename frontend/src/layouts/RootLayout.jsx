@@ -87,6 +87,14 @@ const RootLayout = () => {
                     Reels
                   </span>
                 </Link>
+                <Link to="/reels/shared">
+                  <span className="glass inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-brand-300 hover:text-brand-600">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Shared
+                  </span>
+                </Link>
                 <Link to={`/u/${user?.username}`}>
                   <span className="glass inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-brand-300 hover:text-brand-600">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-fuchsia-500 text-xs font-bold text-white">

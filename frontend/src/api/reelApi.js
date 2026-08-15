@@ -10,6 +10,14 @@ export const reelApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Reels'],
     }),
+    getSharedReels: builder.query({
+      query: ({ cursor, limit = 20 } = {}) => ({
+        url: '/reels/shared-with-me',
+        method: 'GET',
+        params: { cursor: cursor || undefined, limit },
+      }),
+      providesTags: [{ type: 'SharedReels' }],
+    }),
     getReel: builder.query({
       query: (id) => ({ url: `/reels/${id}`, method: 'GET' }),
       providesTags: (_result, _err, id) => [{ type: 'Reel', id }],
@@ -27,8 +35,16 @@ export const reelApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _err, id) => [{ type: 'Reel', id }],
     }),
     shareReel: builder.mutation({
-      query: (id) => ({ url: `/reels/${id}/share`, method: 'POST' }),
-      invalidatesTags: (_result, _err, id) => [{ type: 'Reel', id }],
+      query: ({ id, recipients }) => ({
+        url: `/reels/${id}/share`,
+        method: 'POST',
+        body: { recipients },
+      }),
+      invalidatesTags: (_result, _err, arg) => [
+        { type: 'Reel', id: arg?.id },
+        { type: 'SharedReels' },
+        'Reels',
+      ],
     }),
     playReel: builder.mutation({
       query: (id) => ({ url: `/reels/${id}/play`, method: 'POST' }),
@@ -55,6 +71,7 @@ export const reelApi = baseApi.injectEndpoints({
 
 export const {
   useGetReelsQuery,
+  useGetSharedReelsQuery,
   useGetReelQuery,
   useCreateReelMutation,
   useDeleteReelMutation,
