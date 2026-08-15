@@ -7,14 +7,14 @@ import AdminActionLog from '../models/AdminActionLogModel.js';
 const SEED_USERS = [
   {
     username: 'admin',
-    email: 'admin@nexus.test',
+    email: 'admin@nexus-demo.com',
     password: 'Admin@123',
     fullName: 'Nexus Admin',
     role: 'admin',
   },
   {
     username: 'superadmin',
-    email: 'superadmin@nexus.test',
+    email: 'superadmin@nexus-demo.com',
     password: 'Super@123',
     fullName: 'Nexus Superadmin',
     role: 'superadmin',
@@ -25,6 +25,8 @@ const upsertSeedUser = async ({ username, email, password, fullName, role }) => 
   const existing = await User.findOne({ $or: [{ username }, { email }] });
 
   if (existing) {
+    existing.username = username;
+    existing.email = email;
     existing.role = role;
     existing.fullName = fullName;
     existing.isActive = true;

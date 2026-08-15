@@ -21,11 +21,15 @@ Run `npm run seed:admins` to create/refresh these accounts in the configured DB:
 
 | Role       | Username    | Email                  | Password    |
 |------------|-------------|------------------------|-------------|
-| admin      | admin       | `admin@nexus.test`     | `Admin@123` |
-| superadmin | superadmin  | `superadmin@nexus.test`| `Super@123` |
+| admin      | admin       | `admin@nexus-demo.com` | `Admin@123` |
+| superadmin | superadmin  | `superadmin@nexus-demo.com`| `Super@123` |
 
 Sign in at `/admin/login` (or the normal login). Promotes on re-run, so it will
 reset these accounts to admin/superadmin if roles were changed.
+
+> Use a REAL valid email TLD (`.com`) here — Joi's `string().email()` rejects
+> reserved TLDs like `.test`, so accounts seeded with `@nexus.test` log in with
+> a "Please provide a valid email" validation error.
 
 ## Structure
 
