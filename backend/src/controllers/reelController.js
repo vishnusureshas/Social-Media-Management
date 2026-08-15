@@ -333,9 +333,13 @@ const shareReel = async (req, res, next) => {
 
 const getSharedWithMe = async (req, res, next) => {
   try {
-    const { cursor, limit = 20 } = req.query;
+    const { cursor, limit = 20, scope = 'received' } = req.query;
 
-    const match = { recipient: req.userId, isDeleted: false };
+    const isSent = scope === 'sent';
+    const match = {
+      [isSent ? 'sharer' : 'recipient']: req.userId,
+      isDeleted: false,
+    };
     if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
       match.createdAt = { $lt: new mongoose.Types.ObjectId(cursor).getTimestamp() };
     }
@@ -343,7 +347,7 @@ const getSharedWithMe = async (req, res, next) => {
     const rows = await Share.find(match)
       .sort({ createdAt: -1 })
       .limit(Number(limit) + 1)
-      .populate('sharer', USER_FIELDS);
+      .populate(isSent ? 'recipient' : 'sharer', USER_FIELDS);
 
     const hasMore = rows.length > Number(limit);
     const pageShares = hasMore ? rows.slice(0, Number(limit)) : rows;
@@ -354,7 +358,9 @@ const getSharedWithMe = async (req, res, next) => {
       .lean();
 
     const reelMap = new Map(reels.map((r) => [String(r._id), r]));
-    const sharerMap = new Map(pageShares.map((s) => [String(s.targetId), s.sharer]));
+    const personMap = new Map(
+      pageShares.map((s) => [String(s.targetId), isSent ? s.recipient : s.sharer])
+    );
 
     const sharedReels = reelIds
       .map((id) => {
@@ -362,7 +368,7 @@ const getSharedWithMe = async (req, res, next) => {
         if (!reel) return null;
         return {
           ...reel,
-          sharedBy: sharerMap.get(String(id)) || null,
+          [isSent ? 'sharedTo' : 'sharedBy']: personMap.get(String(id)) || null,
           isRead: pageShares.find((s) => String(s.targetId) === String(id))?.isRead ?? false,
         };
       })
@@ -374,7 +380,7 @@ const getSharedWithMe = async (req, res, next) => {
       ? String(pageShares[pageShares.length - 1]._id)
       : null;
 
-    sendSuccess(res, 200, 'Shared reels retrieved.', {
+    sendSuccess(res, 200, isSent ? 'Reels you shared retrieved.' : 'Shared reels retrieved.', {
       reels: decorated,
       pagination: { cursor: nextCursor, hasMore },
       unread: await Share.countDocuments({ recipient: req.userId, isRead: false, isDeleted: false }),

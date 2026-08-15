@@ -11,10 +11,10 @@ export const reelApi = baseApi.injectEndpoints({
       providesTags: ['Reels'],
     }),
     getSharedReels: builder.query({
-      query: ({ cursor, limit = 20 } = {}) => ({
+      query: ({ scope = 'received', cursor, limit = 20 } = {}) => ({
         url: '/reels/shared-with-me',
         method: 'GET',
-        params: { cursor: cursor || undefined, limit },
+        params: { scope, cursor: cursor || undefined, limit },
       }),
       providesTags: [{ type: 'SharedReels' }],
     }),

@@ -18,6 +18,7 @@ const idParamSchema = Joi.object({
 const feedQuerySchema = Joi.object({
   cursor: Joi.string().max(120).allow('').optional(),
   limit: Joi.number().integer().min(1).max(50).default(20),
+  scope: Joi.string().valid('received', 'sent').default('received'),
 });
 
 const reelCommentSchema = Joi.object({
