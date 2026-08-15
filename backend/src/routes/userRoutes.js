@@ -19,7 +19,9 @@ import {
   usernameParamSchema,
   searchSchema,
   suggestionQuerySchema,
+  userPostsQuerySchema,
 } from '../validations/userValidation.js';
+import { getUserPosts } from '../controllers/postController.js';
 
 const router = Router();
 
@@ -28,6 +30,7 @@ router.get('/suggestions', protect, validate(suggestionQuerySchema, 'query'), ge
 router.patch('/profile', protect, validate(updateProfileSchema), updateProfile);
 router.post('/avatar', protect, uploadImage.single('image'), uploadAvatar);
 router.post('/cover', protect, uploadImage.single('image'), uploadCover);
+router.get('/:username/posts', validate(usernameParamSchema, 'params'), validate(userPostsQuerySchema, 'query'), getUserPosts);
 router.get('/:username/followers', validate(usernameParamSchema, 'params'), getFollowers);
 router.get('/:username/following', validate(usernameParamSchema, 'params'), getFollowing);
 router.post('/:username/follow', protect, validate(usernameParamSchema, 'params'), follow);

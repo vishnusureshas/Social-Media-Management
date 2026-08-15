@@ -44,11 +44,12 @@ const EyeIcon = ({ open }) =>
     </svg>
   );
 
-const PasswordField = ({ label, error, show, onToggle, ...props }) => (
+const PasswordField = ({ label, error, show, onToggle, autoComplete = 'new-password', ...props }) => (
   <div className="relative">
     <Input
       label={label}
       type={show ? 'text' : 'password'}
+      autoComplete={autoComplete}
       placeholder="••••••••"
       error={error}
       icon={({ className }) => (
@@ -127,10 +128,11 @@ const Register = () => {
       social
       ctaWord="Sign up"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           label="Full Name"
           placeholder="Your name"
+          autoComplete="name"
           error={errors.fullName?.message}
           icon={({ className }) => (
             <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -144,6 +146,7 @@ const Register = () => {
         <Input
           label="Username"
           placeholder="@username"
+          autoComplete="username"
           error={errors.username?.message}
           icon={({ className }) => (
             <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -158,6 +161,7 @@ const Register = () => {
           label="Email"
           type="email"
           placeholder="you@example.com"
+          autoComplete="email"
           error={errors.email?.message}
           icon={({ className }) => (
             <svg className={className} viewBox="0 0 24 24" fill="none">

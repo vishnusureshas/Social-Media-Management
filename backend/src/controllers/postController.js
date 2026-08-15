@@ -223,6 +223,48 @@ const getFeed = async (req, res, next) => {
   }
 };
 
+const getUserPosts = async (req, res, next) => {
+  try {
+    const { username } = req.params;
+    const { cursor, limit } = req.query;
+
+    const author = await User.findOne({ username });
+    if (!author) throw new APIError(404, 'User not found.');
+
+    const query = {
+      author: author._id,
+      isDeleted: false,
+      ...(cursor ? { _id: { $lt: new mongoose.Types.ObjectId(cursor) } } : {}),
+    };
+
+    const posts = await Post.find(query)
+      .sort({ _id: -1 })
+      .limit(Number(limit) + 1)
+      .populate('author', USER_FIELDS)
+      .populate('originalPost', 'content media author createdAt')
+      .populate('originalPost.author', USER_FIELDS)
+      .populate('poll');
+
+    const hasMore = posts.length > Number(limit);
+    const pagePosts = hasMore ? posts.slice(0, Number(limit)) : posts;
+    const nextCursor = pagePosts.length ? String(pagePosts[pagePosts.length - 1]._id) : null;
+
+    const visible = [];
+    for (const post of pagePosts) {
+      if (await canViewPost(post, req.userId)) visible.push(post);
+    }
+
+    const decorated = await decoratePosts(visible, req.userId);
+
+    sendSuccess(res, 200, 'User posts retrieved.', {
+      posts: decorated,
+      pagination: { cursor: nextCursor, hasMore },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getPost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id).populate('author', USER_FIELDS).populate('poll');
@@ -556,6 +598,7 @@ const getTrending = async (req, res, next) => {
 export {
   createPost,
   getFeed,
+  getUserPosts,
   getPost,
   updatePost,
   deletePost,

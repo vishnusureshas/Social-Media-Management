@@ -81,6 +81,7 @@ const App = () => (
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<Account />} />
+          <Route path="/account/edit" element={<EditProfile />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/u/:username/edit" element={<EditProfile />} />
           <Route path="/search" element={<Search />} />

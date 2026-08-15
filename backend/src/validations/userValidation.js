@@ -33,4 +33,9 @@ const suggestionQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(20).default(10),
 });
 
-export { updateProfileSchema, usernameParamSchema, searchSchema, suggestionQuerySchema };
+const userPostsQuerySchema = Joi.object({
+  cursor: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow('').optional(),
+  limit: Joi.number().integer().min(1).max(50).default(20),
+});
+
+export { updateProfileSchema, usernameParamSchema, searchSchema, suggestionQuerySchema, userPostsQuerySchema };

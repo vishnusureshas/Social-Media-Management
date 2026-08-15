@@ -26,9 +26,34 @@ const ProfileHeader = ({ user, loading = false }) => {
     }
   };
 
+  const meta = [];
+  if (user.location) {
+    meta.push({
+      key: 'location',
+      icon: <path d="M12 21c-4-3.5-8-6.8-8-11a4.5 4.5 0 019-1 4.5 4.5 0 019 1c0 4.2-4 7.5-8 11z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />,
+      node: <span className="flex items-center gap-1.5 text-slate-500">{user.location}</span>,
+    });
+  }
+  if (user.website) {
+    meta.push({
+      key: 'website',
+      icon: <path d="M12 3a9 9 0 109 9M8 8l3.5-3.5M13.5 13.5L10 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />,
+      node: (
+        <a
+          href={user.website}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 text-violet-400 hover:underline"
+        >
+          {user.website}
+        </a>
+      ),
+    });
+  }
+
   return (
-    <div className="glass-strong overflow-hidden rounded-3xl animate-fade-up">
-      <div className="relative h-52 w-full overflow-hidden bg-gradient-to-r from-brand-500 via-violet-500 to-fuchsia-500">
+    <div className="overflow-hidden rounded-3xl border border-white/[0.09] bg-white/[0.04] backdrop-blur-xl animate-fade-up">
+      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500">
         <div
           className="absolute inset-0 opacity-30"
           style={{
@@ -41,8 +66,8 @@ const ProfileHeader = ({ user, loading = false }) => {
         ) : (
           <div className="h-full w-full" />
         )}
-        <div className="absolute -bottom-14 left-8">
-          <span className="flex h-32 w-32 items-center justify-center rounded-3xl border-4 border-[#0a0e24] bg-gradient-to-br from-brand-500 to-fuchsia-500 text-5xl font-bold text-white shadow-glow">
+        <div className="absolute -bottom-12 left-6 sm:left-8">
+          <span className="flex h-28 w-28 items-center justify-center rounded-3xl border-4 border-[#0a0e24] bg-gradient-to-br from-violet-500 to-fuchsia-500 text-4xl font-bold text-white shadow-glow sm:h-32 sm:w-32 sm:text-5xl">
             {user.avatar ? (
               <img src={user.avatar} alt="Avatar" className="h-full w-full rounded-3xl object-cover" />
             ) : (
@@ -51,7 +76,7 @@ const ProfileHeader = ({ user, loading = false }) => {
           </span>
         </div>
         {user.verified && (
-          <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-[#0b0f26]/80 px-3 py-1 text-xs font-bold text-violet-300 backdrop-blur ring-1 ring-white/10">
+          <span className="absolute right-5 top-5 flex items-center gap-1.5 rounded-full bg-[#0b0f26]/70 px-3 py-1 text-xs font-bold text-violet-300 backdrop-blur ring-1 ring-white/15">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l2.4 2.4 3.4-.4.4 3.4L20 10l-1.8 2.6.1 3.4-3.4.4L12 20l-2.9-1.6-3.4-.4.1-3.4L4 10l1.8-2.6.4-3.4 3.4.4L12 2z" />
             </svg>
@@ -60,45 +85,50 @@ const ProfileHeader = ({ user, loading = false }) => {
         )}
       </div>
 
-      <div className="px-8 pb-8 pt-20">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-slate-900">
+      <div className="px-6 pb-6 pt-16 sm:px-8 sm:pb-8">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-white sm:text-3xl">
               {user.fullName || user.username}
             </h1>
             <p className="mt-1 text-sm font-medium text-slate-500">@{user.username}</p>
-            {user.bio && <p className="mt-3 max-w-lg text-sm text-slate-600">{user.bio}</p>}
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-400">
-              {user.location && (
-                <span className="flex items-center gap-1.5">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 21c-4-3.5-8-6.8-8-11a4.5 4.5 0 019-1 4.5 4.5 0 019 1c0 4.2-4 7.5-8 11z" stroke="currentColor" strokeWidth="1.8" />
-                  </svg>
-                  {user.location}
-                </span>
-              )}
-              {user.website && (
-                <a
-                  href={user.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 text-brand-600 hover:underline"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3a9 9 0 109 9M8 8l3.5-3.5M13.5 13.5L10 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                  {user.website}
-                </a>
-              )}
-            </div>
+            {user.bio && <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300">{user.bio}</p>}
+            {meta.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium">
+                {meta.map((m) => (
+                  <span key={m.key} className="flex items-center gap-1.5 text-slate-500">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">{m.icon}</svg>
+                    {m.node}
+                  </span>
+                ))}
+              </div>
+            )}
+            {user.followsYou && (
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-fuchsia-500/15 px-3 py-1 text-[11px] font-bold text-fuchsia-300 ring-1 ring-fuchsia-400/30">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                Follows you
+              </span>
+            )}
           </div>
-          <div className="flex shrink-0 gap-3">
+          <div className="flex shrink-0 flex-wrap gap-2.5">
             {isOwn ? (
-              <Link to={`/u/${user.username}/edit`}>
-                <Button variant="secondary" size="sm">
-                  Edit profile
-                </Button>
-              </Link>
+              <>
+                <Link to={`/u/${user.username}/edit`}>
+                  <Button variant="secondary" size="sm">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Edit profile
+                  </Button>
+                </Link>
+                <Link to="/account">
+                  <Button variant="ghost" size="sm">
+                    Settings
+                  </Button>
+                </Link>
+              </>
             ) : (
               <>
                 <Button variant="secondary" size="sm" onClick={handleMessage}>
@@ -108,30 +138,9 @@ const ProfileHeader = ({ user, loading = false }) => {
                   Message
                 </Button>
                 <FollowButton username={user.username} isFollowing={user.isFollowing} size="sm" />
-                <ReportButton targetType="user" targetId={user._id} className="self-center" />
+                <ReportButton targetType="user" targetId={user._id} />
               </>
             )}
-          </div>
-        </div>
-
-        <div className="mt-8 grid grid-cols-3 gap-3">
-          <Link
-            to={`/u/${user.username}/followers`}
-            className="glass flex flex-col items-center rounded-2xl px-6 py-4 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300"
-          >
-            <span className="font-display text-2xl font-bold text-gradient">{user.counts?.followers ?? 0}</span>
-            <span className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-500">Followers</span>
-          </Link>
-          <Link
-            to={`/u/${user.username}/following`}
-            className="glass flex flex-col items-center rounded-2xl px-6 py-4 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300"
-          >
-            <span className="font-display text-2xl font-bold text-gradient">{user.counts?.following ?? 0}</span>
-            <span className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-500">Following</span>
-          </Link>
-          <div className="glass flex flex-col items-center rounded-2xl px-6 py-4">
-            <span className="font-display text-2xl font-bold text-gradient">{user.counts?.posts ?? 0}</span>
-            <span className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-500">Posts</span>
           </div>
         </div>
       </div>

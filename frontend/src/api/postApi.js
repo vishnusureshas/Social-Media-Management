@@ -26,6 +26,14 @@ export const postApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Saved'],
     }),
+    getUserPosts: builder.query({
+      query: ({ username, cursor, limit = 20 }) => ({
+        url: `/users/${username}/posts`,
+        method: 'GET',
+        params: { cursor: cursor || undefined, limit },
+      }),
+      providesTags: ['Profile'],
+    }),
     getPost: builder.query({
       query: (id) => ({ url: `/posts/${id}`, method: 'GET' }),
       providesTags: (_result, _err, id) => [{ type: 'Post', id }],
@@ -87,6 +95,7 @@ export const {
   useGetFeedQuery,
   useGetExploreQuery,
   useGetSavedListQuery,
+  useGetUserPostsQuery,
   useGetPostQuery,
   useGetPostsByTagQuery,
   useGetTrendingQuery,

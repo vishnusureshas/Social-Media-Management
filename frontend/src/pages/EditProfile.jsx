@@ -31,9 +31,10 @@ const genderOptions = [
 ];
 
 const EditProfile = () => {
-  const { username } = useParams();
+  const { username: urlUsername } = useParams();
   const navigate = useNavigate();
   const { user: me } = useAuth();
+  const username = urlUsername || me?.username;
 
   const { data, isLoading } = useGetProfileQuery(username);
   const profile = data?.data?.user;
