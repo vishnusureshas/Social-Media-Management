@@ -280,7 +280,7 @@ const copy = {
         Create <span className="neon-text">Account</span>
       </>
     ),
-    subtitle: 'Join Vibely and connect with the world.',
+    subtitle: 'Join Nexus and connect with the world.',
   },
   forgot: {
     chip: 'Account recovery',

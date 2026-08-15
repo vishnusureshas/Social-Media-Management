@@ -116,7 +116,7 @@ const LandingFooter = () => (
       </div>
 
       <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row">
-        <p className="text-sm text-slate-500">© {new Date().getFullYear()} Vibely. All rights reserved.</p>
+        <p className="text-sm text-slate-500">© {new Date().getFullYear()} Nexus. All rights reserved.</p>
         <span className="neon-text text-sm font-semibold">Connect. Share. Inspire.</span>
       </div>
     </div>

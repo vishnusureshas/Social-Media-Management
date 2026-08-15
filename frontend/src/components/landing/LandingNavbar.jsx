@@ -38,7 +38,7 @@ const LandingNavbar = ({ onToggleTheme = () => {} }) => {
       )}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" aria-label="Vibely home" className="shrink-0">
+        <Link to="/" aria-label="Nexus home" className="shrink-0">
           <LandingLogo />
         </Link>
 

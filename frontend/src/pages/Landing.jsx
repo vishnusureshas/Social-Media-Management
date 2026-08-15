@@ -8,12 +8,12 @@ import FinalCta from '../components/landing/FinalCta';
 import LandingFooter from '../components/landing/LandingFooter';
 
 const Landing = () => {
-  const [theme, setTheme] = useState(() => localStorage.getItem('vibely_theme') || 'aurora');
+  const [theme, setTheme] = useState(() => localStorage.getItem('nexus_theme') || 'aurora');
 
   const toggleTheme = () => {
     const next = theme === 'aurora' ? 'neon' : 'aurora';
     setTheme(next);
-    localStorage.setItem('vibely_theme', next);
+    localStorage.setItem('nexus_theme', next);
   };
 
   return (

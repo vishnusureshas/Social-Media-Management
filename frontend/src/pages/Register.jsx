@@ -124,7 +124,7 @@ const Register = () => {
     <AuthLayout
       variant="register"
       title="Create your account ✨"
-      subtitle="Start your journey with Vibely"
+      subtitle="Start your journey with Nexus"
       social
       ctaWord="Sign up"
     >

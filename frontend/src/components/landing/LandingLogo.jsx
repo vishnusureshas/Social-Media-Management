@@ -1,6 +1,6 @@
 import cn from '../../utils/cn';
 
-const VibelyMark = ({ className = 'h-10 w-10' }) => (
+const NexusMark = ({ className = 'h-10 w-10' }) => (
   <div className={cn('icon-orb relative flex items-center justify-center rounded-2xl', className)}>
     <svg viewBox="0 0 32 32" className="h-3/5 w-3/5" fill="none">
       <path d="M12 8l8 16 8-16" stroke="white" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -11,10 +11,10 @@ const VibelyMark = ({ className = 'h-10 w-10' }) => (
 
 const LandingLogo = ({ withText = true, className = '' }) => (
   <span className={cn('flex items-center gap-2.5', className)}>
-    <VibelyMark />
+    <NexusMark />
     {withText && (
       <span className="font-display text-[1.35rem] font-extrabold tracking-tight text-white">
-        Vi<span className="neon-text">bely</span>
+        Ne<span className="neon-text">xus</span>
       </span>
     )}
   </span>

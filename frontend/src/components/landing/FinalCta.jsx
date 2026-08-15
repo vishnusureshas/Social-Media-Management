@@ -38,7 +38,7 @@ const FinalCta = () => {
               Be Part of <span className="neon-text">Something Bigger</span>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-lg text-slate-400">
-              Vibely is more than a platform — it's a movement. Join today and start your journey.
+              Nexus is more than a platform — it's a movement. Join today and start your journey.
             </p>
 
             <div className="mt-11 flex flex-col items-center gap-4">

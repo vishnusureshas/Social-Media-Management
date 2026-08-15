@@ -124,7 +124,7 @@
 }
 
 /* ============================================================
-   Vibely — premium futuristic landing theme
+   Nexus — premium futuristic landing theme
    Scoped to .landing so auth/admin pages are untouched.
    ============================================================ */
 
@@ -475,7 +475,7 @@
 }
 
 /* ============================================================
-   Vibely — futuristic authentication (scoped to .auth)
+   Nexus — futuristic authentication (scoped to .auth)
    Auth pages re-use the .landing scope (dark bg + utilities);
    these rules fix form controls and small components for dark.
    ============================================================ */
@@ -616,7 +616,7 @@
 }
 
 /* ============================================================
-   Vibely — futuristic dashboard theme (scoped to .dashboard)
+   Nexus — futuristic dashboard theme (scoped to .dashboard)
    Re-skins the authenticated app without touching logic:
    remaps the light utility tokens the shared UI components
    use into a dark neon + glassmorphism palette.

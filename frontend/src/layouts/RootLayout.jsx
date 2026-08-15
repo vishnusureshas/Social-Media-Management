@@ -189,7 +189,7 @@ const DesktopSidebar = ({ user }) => (
             color: 'transparent',
           }}
         >
-          Vibely
+          Nexus
         </span>
       </Link>
     </div>
@@ -229,7 +229,7 @@ const DesktopSidebar = ({ user }) => (
         <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 10px 1px rgba(52,211,153,0.8)' }} />
       </div>
       <p className="mt-2.5 text-center text-[10px] font-medium text-slate-600">
-        © {new Date().getFullYear()} Vibely · Connect. Share. Inspire.
+        © {new Date().getFullYear()} Nexus · Connect. Share. Inspire.
       </p>
     </div>
   </aside>
@@ -266,7 +266,7 @@ const TopBar = ({ user, onToggleTheme, onLogout }) => {
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[rgba(7,8,21,0.78)] backdrop-blur-2xl">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 lg:px-8">
-        <Link to="/feed" className="shrink-0 lg:hidden" aria-label="Vibely home">
+        <Link to="/feed" className="shrink-0 lg:hidden" aria-label="Nexus home">
           <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500">
             <svg viewBox="0 0 32 32" className="h-3/5 w-3/5" fill="none">
               <path d="M12 8l8 16 8-16" stroke="white" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -456,11 +456,11 @@ const RootLayout = () => {
   const [logout] = useLogoutMutation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [theme, setTheme] = useState(localStorage.getItem('vibely_dash_theme') || 'midnight');
+  const [theme, setTheme] = useState(localStorage.getItem('nexus_dash_theme') || 'midnight');
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/admin/login'].includes(location.pathname);
 
   useEffect(() => {
-    localStorage.setItem('vibely_dash_theme', theme);
+    localStorage.setItem('nexus_dash_theme', theme);
   }, [theme]);
 
   const handleLogout = async () => {
@@ -509,7 +509,7 @@ const RootLayout = () => {
           {!isAuthPage && (
             <nav className="fixed inset-x-0 top-0 z-40 border-b border-white/[0.06] bg-[rgba(7,9,24,0.55)] backdrop-blur-xl">
               <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                <Link to="/" aria-label="Vibely home" className="flex items-center gap-2.5">
+                <Link to="/" aria-label="Nexus home" className="flex items-center gap-2.5">
                   <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 shadow-[0_0_26px_rgba(168,85,247,0.55)]">
                     <svg viewBox="0 0 32 32" className="h-3/5 w-3/5" fill="none">
                       <path d="M12 8l8 16 8-16" stroke="white" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -525,7 +525,7 @@ const RootLayout = () => {
                       color: 'transparent',
                     }}
                   >
-                    Vibely
+Nexus
                   </span>
                 </Link>
                 <div className="flex items-center gap-3">

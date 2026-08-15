@@ -54,7 +54,7 @@ const ReportModal = ({ open, onClose, targetType, targetId }) => {
         <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
           <div>
             <h3 className="font-display text-lg font-bold text-white">Report content</h3>
-            <p className="text-xs text-slate-500">Help keep Vibely safe. Reports are reviewed by our team.</p>
+            <p className="text-xs text-slate-500">Help keep Nexus safe. Reports are reviewed by our team.</p>
           </div>
           <button
             onClick={onClose}

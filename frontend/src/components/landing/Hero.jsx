@@ -110,7 +110,7 @@ const Hero = () => {
           </h1>
 
           <p className="reveal mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-400 lg:mx-0" style={{ transitionDelay: '160ms' }}>
-            Vibely is the next-gen social platform where real connections meet endless possibilities.
+            Nexus is the next-gen social platform where real connections meet endless possibilities.
           </p>
 
           <div className="reveal mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ transitionDelay: '240ms' }}>
@@ -273,7 +273,7 @@ const Hero = () => {
               </svg>
             </div>
             <div className="mt-2.5 space-y-1.5">
-              {['#vibely', '#creatoreconomy', '#aurora'].map((t, i) => (
+              {['#nexus', '#creatoreconomy', '#aurora'].map((t, i) => (
                 <span
                   key={t}
                   className={`block rounded-lg px-2.5 py-1 text-[10px] font-semibold ${['bg-purple-500/15 text-purple-300', 'bg-fuchsia-500/15 text-fuchsia-300', 'bg-cyan-500/15 text-cyan-300'][i]}`}

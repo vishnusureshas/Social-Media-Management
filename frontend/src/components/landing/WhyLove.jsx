@@ -132,10 +132,10 @@ const WhyLove = () => {
         <div className="reveal mx-auto max-w-2xl text-center">
           <span className="section-chip">
             <span className="chip-dot" />
-            Why Vibely
+            Why Nexus
           </span>
           <h2 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Why You'll <span className="neon-text">Love Vibely</span>
+            Why You'll <span className="neon-text">Love Nexus</span>
           </h2>
           <p className="mt-4 text-lg text-slate-400">Designed for the future. Built for everyone.</p>
         </div>
